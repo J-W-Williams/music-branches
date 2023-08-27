@@ -3,8 +3,16 @@ const morgan = require('morgan');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 // const http = require('http');
-require("dotenv").config();
+const { MongoClient } = require("mongodb");
 
+
+const options = {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  };
+
+require("dotenv").config();
+const { MONGO_URI } = process.env;
 const port = 8000;
 const app = express();
 
@@ -56,10 +64,29 @@ app.post('/api/upload-audio', upload.single('audio'), async (req, res) => {
 
     console.log('Uploaded to Cloudinary:', result);
 
-  
     fs.unlinkSync(tempFilePath);
-
     res.json({ success: true, message: 'Audio uploaded successfully' });
+
+    // send part of this result to Mongo.
+    // database: music-branches
+    // collection: users
+    // will break all of this out to handler files.
+
+    const client = new MongoClient(MONGO_URI, options);
+        try {
+            await client.connect();
+            const dbName = "music-branches";
+            const db = client.db(dbName);
+            console.log("hello from attempted mongo");
+            const mongoResult = await db.collection("users").insertOne(result);
+            client.close();
+            //return res.status(201).json({ status: 201, message: "success", mongoResult });
+        } catch (err) {
+            //res.status(500).json({ status: 500, message: err.message });
+        }
+
+
+
   } catch (error) {
     console.error('Error uploading to Cloudinary:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
