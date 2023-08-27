@@ -12,14 +12,11 @@ const HomePage = () => {
         formData.append('audio', blob);
     
         try {
-            // having proxy issues, using this for testing
-            // const response = await fetch('http://localhost:8000/api/upload-audio', {
+          
             const response = await fetch('/api/upload-audio', {
                 method: 'POST',
                 body: formData,
-                // headers: {                
-                //     'Content-Type': 'audio/webm',
-                //   },
+            
             });
     
             if (response.ok) {
@@ -37,7 +34,7 @@ const HomePage = () => {
 
   return (
     <>
-    HomePage!
+    <h2>Audio Recorder!</h2>
           {/* <AudioRecorder
         onRecordingComplete={addAudioElement}
         audioTrackConstraints={{

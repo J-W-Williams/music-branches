@@ -45,6 +45,26 @@ app.get('/', (req, res) => {
     res.status(200).json({message: 'hello world!'});
 })
 
+
+app.get('/api/get-audio', async (req, res) => {
+    try {
+      
+      const results = await fetch(`https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/resources/video`, {
+        headers: {
+          Authorization: `Basic ${Buffer.from(process.env.CLOUDINARY_API_KEY + ':' + process.env.CLOUDINARY_API_SECRET).toString('base64')}`
+        }
+      }).then(r => r.json());
+
+      //const data = await cloudinaryResponse.json();
+      console.log("data:", results);
+      res.json(results.resources);
+    } catch (error) {
+      console.error('Error fetching audio resources:', error);
+      res.status(500).json({ success: false, message: 'Error fetching audio resources' });
+    }
+  });
+  
+
 const fs = require('fs');
 const path = require('path');
 
