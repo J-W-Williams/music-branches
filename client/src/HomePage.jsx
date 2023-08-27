@@ -5,14 +5,35 @@ import { AudioRecorder } from 'react-audio-voice-recorder';
 
 const HomePage = () => {
 
-    const addAudioElement = (blob) => {
-        // const url = URL.createObjectURL(blob);
-        // const audio = document.createElement('audio');
-        // audio.src = url;
-        // audio.controls = true;
-        // document.body.appendChild(audio);
+    const addAudioElement = async (blob) => {
         console.log("blob", blob);
+    
+        const formData = new FormData();
+        formData.append('audio', blob);
+    
+        try {
+            // having proxy issues, using this for testing
+            // const response = await fetch('http://localhost:8000/api/upload-audio', {
+            const response = await fetch('/api/upload-audio', {
+                method: 'POST',
+                body: formData,
+                // headers: {                
+                //     'Content-Type': 'audio/webm',
+                //   },
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Uploaded audio successfully', data);
+                // do stuff
+            } else {
+                console.error('Failed to upload audio', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error uploading audio', error);
+        }
     };
+    
 
   return (
     <>

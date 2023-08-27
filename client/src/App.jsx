@@ -9,12 +9,10 @@ const App = () => {
 
   return (
     <BrowserRouter>
-      <Header />
-      {/* <Wrapper> */}
+      <Header />    
         <Routes>
           <Route path="/" element={<HomePage />} />
-        </Routes>
-      {/* </Wrapper> */}
+        </Routes>   
     </BrowserRouter>
   )
 }
