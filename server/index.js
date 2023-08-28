@@ -72,6 +72,8 @@ app.post('/api/upload-audio', upload.single('audio'), async (req, res) => {
   console.log("hello from backend, /api/upload-audio");
   console.log("I have this:", req.file);
 
+  const { tags } = req.body;
+
   try {
 
     const tempFilePath = path.join(__dirname, 'temp_audio.webm');
@@ -79,7 +81,8 @@ app.post('/api/upload-audio', upload.single('audio'), async (req, res) => {
 
     const result = await cloudinary.uploader.upload(tempFilePath, {
         resource_type: 'auto',
-        format: 'webm' 
+        format: 'webm',
+        tags: tags, 
     });
 
     console.log('Uploaded to Cloudinary:', result);

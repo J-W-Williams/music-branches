@@ -5,11 +5,22 @@ import { AudioRecorder } from 'react-audio-voice-recorder';
 
 const HomePage = () => {
 
+  const [tags, setTags] = useState('');
+  
+  const handleTagsChange = (event) => {
+    setTags(event.target.value);
+  };
+
     const addAudioElement = async (blob) => {
         console.log("blob", blob);
-    
+        //const tags = "happy, sunny, A, 7/8";
+        
+
+       
+
         const formData = new FormData();
         formData.append('audio', blob);
+        formData.append('tags', tags);
     
         try {
           
@@ -60,6 +71,10 @@ const HomePage = () => {
         downloadOnSavePress={true}
         downloadFileExtension="webm" 
       />
+      Add tags:
+      <textarea value={tags}
+        onChange={handleTagsChange}
+        placeholder="Enter tags separated by commas"></textarea>
     </>
   )
 }
