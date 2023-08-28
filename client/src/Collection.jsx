@@ -17,6 +17,7 @@ const Collection = () => {
             }
           }
       
+        
           fetchAudioResources();
       }, []);
 
@@ -31,6 +32,7 @@ const Collection = () => {
             <audio controls>
               <source src={resource.secure_url} type="audio/webm" />
             </audio>
+            <p>Tags: {resource.tags}</p>
           </li>
         ))}
       </ul>
