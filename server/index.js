@@ -56,7 +56,11 @@ app.get('/api/get-audio', async (req, res) => {
       }).then(r => r.json());
 
       //const data = await cloudinaryResponse.json();
-      console.log("data:", results);
+      console.log("results:", results);
+
+      // might need a little more here to get the tags.
+      // const currentTags = resource.context.custom.tags.split(',');
+
       res.json(results.resources);
     } catch (error) {
       console.error('Error fetching audio resources:', error);
