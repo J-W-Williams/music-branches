@@ -2,29 +2,29 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import styled from "styled-components";
 
-const Collection = () => {
+const SheetMusic = () => {
 
-    const [audioResources, setAudioResources] = useState([]);
+    //const [audioResources, setAudioResources] = useState([]);
 
     useEffect(() => {
-        async function fetchAudioResources() {
-            try {
-              const response = await fetch('/api/get-audio');
-              const data = await response.json();
-              setAudioResources(data);
-            } catch (error) {
-              console.error('Error fetching audio resources:', error);
-            }
-          }
+        // async function fetchAudioResources() {
+        //     try {
+        //       const response = await fetch('/api/get-audio');
+        //       const data = await response.json();
+        //       setAudioResources(data);
+        //     } catch (error) {
+        //       console.error('Error fetching audio resources:', error);
+        //     }
+        //   }
       
         
-          fetchAudioResources();
+        //   fetchAudioResources();
       }, []);
 
   return (
     <Wrapper>
-     
-      <div>
+        <h2>Sheet Music Collection!</h2>
+      {/* <div>
       <h2>Audio Collection!</h2>
       <ul>
         {audioResources.map(resource => (
@@ -36,7 +36,7 @@ const Collection = () => {
           </li>
         ))}
       </ul>
-    </div>
+    </div> */}
     </Wrapper>
   )
 }
@@ -45,4 +45,4 @@ const Wrapper = styled.div`
     text-align: left;
 `
 
-export default Collection;
+export default SheetMusic;
