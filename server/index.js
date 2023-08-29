@@ -94,11 +94,6 @@ app.post('/api/upload-audio', upload.single('audio'), async (req, res) => {
     fs.unlinkSync(tempFilePath);
     res.json({ success: true, message: 'Audio uploaded successfully' });
 
-    // send part of this result to Mongo.
-    // database: music-branches
-    // collection: users
-    // will break all of this out to handler files.
-
     const client = new MongoClient(MONGO_URI, options);
         try {
             await client.connect();
@@ -121,26 +116,51 @@ app.post('/api/upload-audio', upload.single('audio'), async (req, res) => {
 })
 
 
-// app.post('/api/upload-audio', upload.single('audio'), async (req, res) => {
-//     console.log("hello from backend, /api/upload-audio");
-    
-//     try {
-//       const result = await cloudinary.uploader.upload(req.file.buffer, {
-//         resource_type: 'raw', 
-//         public_id: 'test-id',
-//         overwrite: true, 
-//         format: 'webm', 
-//       });
-  
-//       console.log('Uploaded to Cloudinary:', result);
-  
-//       res.json({ success: true, message: 'Audio uploaded successfully' });
-//     } catch (error) {
-//       console.error('Error uploading to Cloudinary:', error);
-//       res.status(500).json({ success: false, message: 'Internal server error' });
-//     }
-//   })
-  
+app.post('/api/upload-image', upload.single('image'), async (req, res) => {
+  console.log("hello from backend, /api/upload-image");
+  console.log("I have this:", req.file);
+
+   const { tags } = req.body;
+
+  try {
+    // would this same encoding work for the audio
+    // and not have to save temp file on fs?
+
+    const b64 = Buffer.from(req.file.buffer).toString("base64");
+    let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+
+    const result = await cloudinary.uploader.upload(dataURI, {tags: tags});
+
+    console.log('Uploaded to Cloudinary:', result);
+
+    // now add Mongo DB info in /sheets collection
+
+    const client = new MongoClient(MONGO_URI, options);
+        try {
+            await client.connect();
+            const dbName = "music-branches";
+            const db = client.db(dbName);
+            console.log("hello from attempted mongo");
+            const mongoResult = await db.collection("sheets").insertOne(result);
+            client.close();
+            //return res.status(201).json({ status: 201, message: "success", mongoResult });
+        } catch (err) {
+            //res.status(500).json({ status: 500, message: err.message });
+        }
+
+
+  } catch (error) {
+    console.error('Error uploading to Cloudinary:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+})
+
+
+
+
+
+
+
 
 
 
