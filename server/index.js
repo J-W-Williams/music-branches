@@ -2,9 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
-// const http = require('http');
 const { MongoClient } = require("mongodb");
-
 
 const options = {
     useNewUrlParser: true,
@@ -45,7 +43,6 @@ app.get('/', (req, res) => {
     res.status(200).json({message: 'hello world!'});
 })
 
-
 app.get('/api/get-audio', async (req, res) => {
     try {
       
@@ -55,11 +52,7 @@ app.get('/api/get-audio', async (req, res) => {
         }
       }).then(r => r.json());
 
-      //const data = await cloudinaryResponse.json();
       console.log("results:", results);
-
-      // might need a little more here to get the tags.
-      // const currentTags = resource.context.custom.tags.split(',');
 
       res.json(results.resources);
     } catch (error) {
@@ -107,14 +100,11 @@ app.post('/api/upload-audio', upload.single('audio'), async (req, res) => {
             //res.status(500).json({ status: 500, message: err.message });
         }
 
-
-
   } catch (error) {
     console.error('Error uploading to Cloudinary:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 })
-
 
 app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   console.log("hello from backend, /api/upload-image");
@@ -125,7 +115,6 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
   try {
     // would this same encoding work for the audio
     // and not have to save temp file on fs?
-
     const b64 = Buffer.from(req.file.buffer).toString("base64");
     let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
 
@@ -134,7 +123,6 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
     console.log('Uploaded to Cloudinary:', result);
 
     // now add Mongo DB info in /sheets collection
-
     const client = new MongoClient(MONGO_URI, options);
         try {
             await client.connect();
@@ -148,7 +136,6 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
             //res.status(500).json({ status: 500, message: err.message });
         }
 
-
   } catch (error) {
     console.error('Error uploading to Cloudinary:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -157,7 +144,23 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
 
 
 
+app.get('/api/get-images', async (req, res) => {
+  try {
+    
+    const results = await fetch(`https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/resources/image`, {
+      headers: {
+        Authorization: `Basic ${Buffer.from(process.env.CLOUDINARY_API_KEY + ':' + process.env.CLOUDINARY_API_SECRET).toString('base64')}`
+      }
+    }).then(r => r.json());
 
+    //console.log("results:", results);
+
+    res.json(results.resources);
+  } catch (error) {
+    console.error('Error fetching audio resources:', error);
+    res.status(500).json({ success: false, message: 'Error fetching audio resources' });
+  }
+});
 
 
 

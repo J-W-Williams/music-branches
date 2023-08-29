@@ -16,8 +16,7 @@ const Collection = () => {
               console.error('Error fetching audio resources:', error);
             }
           }
-      
-        
+          
           fetchAudioResources();
       }, []);
 

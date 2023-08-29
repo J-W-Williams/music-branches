@@ -7,12 +7,12 @@ const Header = () => {
 
   return (
     <Wrapper>
-      Header!
+      Music Branches
     </Wrapper>
   )
 }
 
-const Wrapper = styled.p`
+const Wrapper = styled.h2`
     text-align: center;
 `
 
