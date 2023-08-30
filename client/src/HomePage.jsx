@@ -6,7 +6,7 @@ import { useUserContext } from './context/UserContext';
 const HomePage = () => {
 
   const [tags, setTags] = useState('');
-  const { loggedInUser, logout } = useUserContext();
+  const { loggedInUser, logout, selectedProject } = useUserContext();
 
   const handleTagsChange = (event) => {
     setTags(event.target.value);
@@ -76,6 +76,7 @@ const HomePage = () => {
         onChange={handleTagsChange}
         placeholder="Enter tags separated by commas"></textarea>
         <p>This is {loggedInUser} by the way.</p>
+        <p>Working on project {selectedProject}.</p>
     </>
   )
 }

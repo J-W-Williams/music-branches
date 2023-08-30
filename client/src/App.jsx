@@ -10,7 +10,7 @@ import { useUserContext } from './context/UserContext';
 
 const App = () => {
 
-  const { loggedInUser } = useUserContext();
+  const { loggedInUser, userProjects, selectedProject } = useUserContext();
 
   return (
     <div>
@@ -25,8 +25,7 @@ const App = () => {
            <Route path="/login" element={<Login />} />
            <Route path="/dashboard" element={<Dashboard />} />
            <Route path="/collection" element={<Collection />} />
-           <Route path="/sheet-music" element={<SheetMusic />} />
-          
+           <Route path="/sheet-music" element={<SheetMusic />} />          
          </Routes>   
      </BrowserRouter>
         </div>

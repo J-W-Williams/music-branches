@@ -86,7 +86,7 @@ const SheetMusic = () => {
         <button onClick={handleUpload} className="btn-green">
             {loading ? "uploading..." : "upload to cloudinary"}
         </button>
-     <Line></Line>
+  
             <GalleryWrapper>
       {imageResources.map(image => (
         <Thumbnail key={image.public_id} src={image.secure_url} alt={image.public_id} onClick={() => openModal(image)} />
@@ -129,11 +129,7 @@ const FullsizeImage = styled.img`
   object-fit: contain;
 `;
 
-const Line = styled.div`
-    border-bottom: 1px solid black;
-    padding-top: 10px;
-    padding-bottom: 10px;
-`
+
 const GalleryWrapper = styled.div`
     padding-top: 10px;
     display: flex;
