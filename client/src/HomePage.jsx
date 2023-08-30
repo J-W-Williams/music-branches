@@ -1,15 +1,18 @@
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AudioRecorder } from 'react-audio-voice-recorder';
-
+import { useUserContext } from './context/UserContext';
 
 const HomePage = () => {
 
   const [tags, setTags] = useState('');
-  
+  const { loggedInUser, logout } = useUserContext();
+
   const handleTagsChange = (event) => {
     setTags(event.target.value);
   };
+
+    // upload tags will vary based on which user is loggedIn.
 
     const addAudioElement = async (blob) => {
         console.log("blob", blob);
@@ -72,6 +75,7 @@ const HomePage = () => {
       <textarea value={tags}
         onChange={handleTagsChange}
         placeholder="Enter tags separated by commas"></textarea>
+        <p>This is {loggedInUser} by the way.</p>
     </>
   )
 }
