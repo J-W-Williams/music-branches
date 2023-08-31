@@ -65,9 +65,33 @@ app.get('/api/get-audio', async (req, res) => {
         }
       }).then(r => r.json());
 
-      console.log("results:", results);
+      // console.log("results:", results);
 
-      res.json(results.resources);
+      // need second lookup for tags
+
+      // const tagsArray = [];      
+      // for (let i=0; i<results.resources.length; i++) {
+      //   await cloudinary.api.resource(results.resources[i].public_id,{type : 'upload', resource_type : 'video'}).then(result=>tagsArray.push(result.tags));
+      // }
+      // redo this as a map
+      const tagsArray = await Promise.all(results.resources.map(async (resource) => {
+        const result = await cloudinary.api.resource(resource.public_id, { type: 'upload', resource_type: 'video' });
+        return result.tags;
+      }));
+
+      console.log("results.resources:", results.resources);
+      console.log("tagsArray:", tagsArray);
+
+      const mergedArray = results.resources.map((item, index) => {
+        const tags = tagsArray[index] || [];
+        return { ...item, tags };
+      });
+      
+      console.log(mergedArray);
+
+
+      // res.json(results.resources);
+      res.json(mergedArray);
     } catch (error) {
       console.error('Error fetching audio resources:', error);
       res.status(500).json({ success: false, message: 'Error fetching audio resources' });
