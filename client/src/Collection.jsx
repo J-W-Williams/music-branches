@@ -6,12 +6,15 @@ const Collection = () => {
 
     const [audioResources, setAudioResources] = useState([]);
     const [itemDeleted, setItemDeleted] = useState(false);
-    const [tags, setTags] = useState('');
-    // const { loggedInUser, logout, selectedProject } = useUserContext();
-  
-    const handleTagsChange = (event) => {
-      setTags(event.target.value);
+    const [tagsInput, setTagsInput] = useState({});
+
+    const handleTagsInputChange = (publicId, value) => {
+      setTagsInput(prevState => ({
+        ...prevState,
+        [publicId]: value,
+      }));
     };
+    
     
     useEffect(() => {
  
@@ -31,12 +34,34 @@ const Collection = () => {
       }, [itemDeleted]);
 
 
-  const updateTags = async (tags) => {
-    console.log("hello from updateTags");
-    if (tags) {
-      console.log("got some new tags here:", tags);
-    }
-  }
+      const updateTags = async (resource) => {
+        const tagsToAdd = tagsInput[resource.public_id]?.split(',').map(tag => tag.trim());
+      
+        console.log("hello from FE, updateTags");
+        console.log("tagsToAdd:", tagsToAdd);
+
+        // off to /api/update-tags...
+
+        if (tagsToAdd && tagsToAdd.length > 0) {
+        
+          const response = await fetch('/api/update-tags', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              publicId: resource.public_id,
+              tags: tagsToAdd,
+            }),
+          });
+      
+          if (response.ok) {
+            // Update the state or fetch updated data from the backend
+          } else {
+            console.error('Failed to update tags', response.statusText);
+          }
+        }
+      };
 
   const handleDestroy = async (id) => {
     console.log("destroying:", id);
@@ -84,6 +109,15 @@ const Collection = () => {
                 ))}
               </ul>
             </TagHolder>
+            
+            <input
+        type="text"
+        placeholder="Add tags (comma-separated)"
+        value={tagsInput[resource.public_id] || ''}
+        onChange={e => handleTagsInputChange(resource.public_id, e.target.value)}
+      />
+      <button onClick={() => updateTags(resource)}>Update Tags</button>
+
             <button onClick={() => handleDestroy(resource.public_id)}>x</button>
           
           </MyListItem>

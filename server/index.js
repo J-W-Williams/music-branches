@@ -65,15 +65,13 @@ app.get('/api/get-audio', async (req, res) => {
         }
       }).then(r => r.json());
 
-      // console.log("results:", results);
-
       // need second lookup for tags
-
       // const tagsArray = [];      
       // for (let i=0; i<results.resources.length; i++) {
       //   await cloudinary.api.resource(results.resources[i].public_id,{type : 'upload', resource_type : 'video'}).then(result=>tagsArray.push(result.tags));
       // }
       // redo this as a map
+
       const tagsArray = await Promise.all(results.resources.map(async (resource) => {
         const result = await cloudinary.api.resource(resource.public_id, { type: 'upload', resource_type: 'video' });
         return result.tags;
@@ -234,6 +232,41 @@ app.delete('/api/delete-audio/:id', async (req, res) => {
   }
 });
 
+
+
+app.post('/api/update-tags', async (req, res) => {
+  console.log("hello from backend, /api/update-tags");
+  console.log("I have this:", req);
+
+  //  const { tags } = req.body;
+
+  // try {
+  //   const b64 = Buffer.from(req.file.buffer).toString("base64");
+  //   let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+
+  //   const result = await cloudinary.uploader.upload(dataURI, {tags: tags});
+
+  //   console.log('Uploaded to Cloudinary:', result);
+
+  //   // now add Mongo DB info in /sheets collection
+  //   const client = new MongoClient(MONGO_URI, options);
+  //       try {
+  //           await client.connect();
+  //           const dbName = "music-branches";
+  //           const db = client.db(dbName);
+  //           console.log("hello from attempted mongo");
+  //           const mongoResult = await db.collection("sheets").insertOne(result);
+  //           client.close();
+  //           //return res.status(201).json({ status: 201, message: "success", mongoResult });
+  //       } catch (err) {
+  //           //res.status(500).json({ status: 500, message: err.message });
+  //       }
+
+  // } catch (error) {
+  //   console.error('Error uploading to Cloudinary:', error);
+  //   res.status(500).json({ success: false, message: 'Internal server error' });
+  // }
+})
 
 
 app.listen(port, () => {
