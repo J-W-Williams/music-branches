@@ -23,14 +23,27 @@ app.use(morgan('tiny'))
 // was getting Access-Control-Allow-Origin issue
 // followed tutorial here
 // https://www.freecodecamp.org/news/access-control-allow-origin-header-explained/
-app.use((req, res, next) => {
+// app.use((req, res, next) => {
+//       res.setHeader("Access-Control-Allow-Origin", "*");
+//       res.header(
+//         "Access-Control-Allow-Headers",
+//         "Origin, X-Requested-With, Content-Type, Accept"
+//     );
+//     next();
+//   });
+
+  app.use(function (req, res, next) {
     res.setHeader("Access-Control-Allow-Origin", "*");
+    res.header(
+      "Access-Control-Allow-Methods",
+      "OPTIONS, HEAD, GET, PUT, POST, DELETE"
+    );
     res.header(
       "Access-Control-Allow-Headers",
       "Origin, X-Requested-With, Content-Type, Accept"
     );
     next();
-  });
+  })
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -162,8 +175,40 @@ app.get('/api/get-images', async (req, res) => {
   }
 });
 
+app.delete('/api/delete-audio/:id', async (req, res) => {
 
+  const id = req.params.id;
+  try {
+    
+    const options = "";
 
+    const public_id = id;
+    const cloudinaryResult = await cloudinary.uploader.destroy(public_id, {type : 'upload', resource_type : 'video'});
+    console.log("cloudinaryResult:", cloudinaryResult);
+
+    // also need to remove from Mongo
+    const client = new MongoClient(MONGO_URI, options);
+  try {
+    await client.connect();
+    const dbName = "music-branches";
+    const db = client.db(dbName);
+ 
+    const query = { public_id: id };
+    const results = await db.collection("users").deleteOne(query);
+
+    console.log("mongo result:", results);
+    client.close();
+    //return res.status(201).json({ status: 201, message: "success", result });
+  } catch (err) {
+    //res.status(500).json({ status: 500, message: err.message });
+  }
+
+    res.json(results.resources);
+  } catch (error) {
+    //console.error('Error deleting audio resources:', error);
+    //res.status(500).json({ success: false, message: 'Error fetching audio resources' });
+  }
+});
 
 
 
