@@ -23,18 +23,6 @@ const upload = multer({ storage });
 
 app.use(morgan('tiny'))
 
-// was getting Access-Control-Allow-Origin issue
-// followed tutorial here
-// https://www.freecodecamp.org/news/access-control-allow-origin-header-explained/
-// app.use((req, res, next) => {
-//       res.setHeader("Access-Control-Allow-Origin", "*");
-//       res.header(
-//         "Access-Control-Allow-Headers",
-//         "Origin, X-Requested-With, Content-Type, Accept"
-//     );
-//     next();
-//   });
-
   app.use(function (req, res, next) {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.header(
@@ -235,8 +223,6 @@ app.delete('/api/delete-audio/:id', async (req, res) => {
   }
 });
 
-
-
 app.post('/api/update-tags', async (req, res) => {
   console.log("hello from backend, /api/update-tags");
   console.log("I have this:", req.body);
@@ -273,36 +259,57 @@ app.post('/api/update-tags', async (req, res) => {
     //res.status(500).json({ status: 500, message: err.message });
   }
 
-  //
+ 
+})
 
-  //  const { tags } = req.body;
+app.delete('/api/delete-tag/:publicId/:tags', async (req, res) => {
+  console.log("hello from backend, /api/delete-tag");
+  // console.log("I have this:", req.body);
 
-  // try {
-  //   const b64 = Buffer.from(req.file.buffer).toString("base64");
-  //   let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+  const publicId = req.params.publicId;
+  const tagsToDelete = req.params.tags;
 
-  //   const result = await cloudinary.uploader.upload(dataURI, {tags: tags});
+  console.log("publicId:", publicId);
+  console.log("tagsToDelete:", tagsToDelete);
 
-  //   console.log('Uploaded to Cloudinary:', result);
+  
+  // // update tags in Cloudinary
+  const result = await cloudinary.uploader.remove_tag(tagsToDelete, publicId, {type : 'upload', resource_type : 'video'});
+  console.log("response", result);
 
-  //   // now add Mongo DB info in /sheets collection
-  //   const client = new MongoClient(MONGO_URI, options);
-  //       try {
-  //           await client.connect();
-  //           const dbName = "music-branches";
-  //           const db = client.db(dbName);
-  //           console.log("hello from attempted mongo");
-  //           const mongoResult = await db.collection("sheets").insertOne(result);
-  //           client.close();
-  //           //return res.status(201).json({ status: 201, message: "success", mongoResult });
-  //       } catch (err) {
-  //           //res.status(500).json({ status: 500, message: err.message });
-  //       }
+  // // update tags in Mongo
+  const client = new MongoClient(MONGO_URI, options);
+  try {
+    console.log("in mongo");
+    await client.connect();
+    const dbName = "music-branches";
+    const db = client.db(dbName);
+    
+    console.log("mongo tagsToDelete:", tagsToDelete);
+    console.log("this is a:", typeof(tagsToDelete));
+    const tagArray = [tagsToDelete];
+    console.log("mongo tagArray:", tagArray);
+    console.log("this is an:", typeof(tagArray));
 
-  // } catch (error) {
-  //   console.error('Error uploading to Cloudinary:', error);
-  //   res.status(500).json({ success: false, message: 'Internal server error' });
-  // }
+    const query = { public_id: publicId };
+    const action = {
+      $pull: {
+        tags: { $in: tagArray },
+      },
+    };
+    console.log("query:", query);
+    console.log("action:", action);
+   
+    const results = await db.collection("users").updateOne(query, action);
+   
+    console.log("mongo result:", results);
+    client.close();
+    //return res.status(201).json({ status: 201, message: "success", result });
+  } catch (err) {
+    //res.status(500).json({ status: 500, message: err.message });
+  }
+
+ 
 })
 
 
