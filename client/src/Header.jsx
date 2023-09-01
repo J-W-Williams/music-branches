@@ -62,7 +62,7 @@ const Header = () => {
         </>
       )}
         <Title>
-          Music Branches
+          <Link to="/dashboard">Music Branches</Link>
         </Title>  
         <Navigation>
           <Link to="/"><LinkText>Audio Recorder</LinkText></Link>

@@ -133,40 +133,66 @@ app.post('/api/upload-audio', upload.single('audio'), async (req, res) => {
 })
 
 app.post('/api/upload-image', upload.single('image'), async (req, res) => {
-  console.log("hello from backend, /api/upload-image");
-  console.log("I have this:", req.file);
-
-   const { tags } = req.body;
+  const { tags } = req.body;
 
   try {
-    // would this same encoding work for the audio
-    // and not have to save temp file on fs?
     const b64 = Buffer.from(req.file.buffer).toString("base64");
-    let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+    const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
 
-    const result = await cloudinary.uploader.upload(dataURI, {tags: tags});
+    // Upload to Cloudinary
+    const cloudinaryResult = await cloudinary.uploader.upload(dataURI, { tags: tags });
+    console.log('Uploaded to Cloudinary:', cloudinaryResult);
 
-    console.log('Uploaded to Cloudinary:', result);
-
-    // now add Mongo DB info in /sheets collection
+    // Add MongoDB info
     const client = new MongoClient(MONGO_URI, options);
-        try {
-            await client.connect();
-            const dbName = "music-branches";
-            const db = client.db(dbName);
-            console.log("hello from attempted mongo");
-            const mongoResult = await db.collection("sheets").insertOne(result);
-            client.close();
-            //return res.status(201).json({ status: 201, message: "success", mongoResult });
-        } catch (err) {
-            //res.status(500).json({ status: 500, message: err.message });
-        }
+    await client.connect();
+    const dbName = "music-branches";
+    const db = client.db(dbName);
 
+    const mongoResult = await db.collection("sheets").insertOne(cloudinaryResult);
+    client.close();
+
+    res.status(200).json({ success: true, message: 'Image uploaded successfully', cloudinaryResult, mongoResult });
   } catch (error) {
     console.error('Error uploading to Cloudinary:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
-})
+});
+
+
+// app.post('/api/upload-image', upload.single('image'), async (req, res) => {
+ 
+//    const { tags } = req.body;
+
+//   try {
+//     // would this same encoding work for the audio
+//     // and not have to save temp file on fs?
+//     const b64 = Buffer.from(req.file.buffer).toString("base64");
+//     let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+
+//     const result = await cloudinary.uploader.upload(dataURI, {tags: tags});
+
+//     console.log('Uploaded to Cloudinary:', result);
+
+//     // now add Mongo DB info in /sheets collection
+//     const client = new MongoClient(MONGO_URI, options);
+//         try {
+//             await client.connect();
+//             const dbName = "music-branches";
+//             const db = client.db(dbName);
+//             console.log("hello from attempted mongo");
+//             const mongoResult = await db.collection("sheets").insertOne(result);
+//             client.close();
+//             //return res.status(201).json({ status: 201, message: "success", mongoResult });
+//         } catch (err) {
+//             //res.status(500).json({ status: 500, message: err.message });
+//         }
+
+//   } catch (error) {
+//     console.error('Error uploading to Cloudinary:', error);
+//     res.status(500).json({ success: false, message: 'Internal server error' });
+//   }
+// })
 
 
 
@@ -188,40 +214,82 @@ app.get('/api/get-images', async (req, res) => {
   }
 });
 
-app.delete('/api/delete-audio/:id', async (req, res) => {
 
+app.delete('/api/delete-audio/:id', async (req, res) => {
   const id = req.params.id;
+
   try {
-    
     const options = "";
 
+    // Delete from Cloudinary
     const public_id = id;
-    const cloudinaryResult = await cloudinary.uploader.destroy(public_id, {type : 'upload', resource_type : 'video'});
+    const cloudinaryResult = await cloudinary.uploader.destroy(public_id, {
+      type: 'upload',
+      resource_type: 'video',
+    });
     console.log("cloudinaryResult:", cloudinaryResult);
 
-    // also need to remove from Mongo
+    // Remove from MongoDB
     const client = new MongoClient(MONGO_URI, options);
-  try {
-    await client.connect();
-    const dbName = "music-branches";
-    const db = client.db(dbName);
- 
-    const query = { public_id: id };
-    const results = await db.collection("users").deleteOne(query);
 
-    console.log("mongo result:", results);
-    client.close();
-    //return res.status(201).json({ status: 201, message: "success", result });
-  } catch (err) {
-    //res.status(500).json({ status: 500, message: err.message });
-  }
+    try {
+      await client.connect();
+      const dbName = "music-branches";
+      const db = client.db(dbName);
 
-    res.json(results.resources);
+      const query = { public_id: id };
+      const mongoResult = await db.collection("users").deleteOne(query);
+
+      console.log("mongo result:", mongoResult);
+      client.close();
+
+      // Both Cloudinary and MongoDB operations completed successfully
+      return res.status(200).json({ message: "Success" });
+    } catch (err) {
+      console.error('Error deleting from MongoDB:', err);
+      return res.status(500).json({ message: 'Error deleting from MongoDB' });
+    }
   } catch (error) {
-    //console.error('Error deleting audio resources:', error);
-    //res.status(500).json({ success: false, message: 'Error fetching audio resources' });
+    console.error('Error deleting audio resources:', error);
+    return res.status(500).json({ message: 'Error deleting audio resources' });
   }
 });
+
+
+// app.delete('/api/delete-audio/:id', async (req, res) => {
+
+//   const id = req.params.id;
+//   try {
+    
+//     const options = "";
+
+//     const public_id = id;
+//     const cloudinaryResult = await cloudinary.uploader.destroy(public_id, {type : 'upload', resource_type : 'video'});
+//     console.log("cloudinaryResult:", cloudinaryResult);
+
+//     // also need to remove from Mongo
+//     const client = new MongoClient(MONGO_URI, options);
+//   try {
+//     await client.connect();
+//     const dbName = "music-branches";
+//     const db = client.db(dbName);
+ 
+//     const query = { public_id: id };
+//     const results = await db.collection("users").deleteOne(query);
+
+//     console.log("mongo result:", results);
+//     client.close();
+//     //return res.status(201).json({ status: 201, message: "success", result });
+//   } catch (err) {
+//     //res.status(500).json({ status: 500, message: err.message });
+//   }
+
+//     res.json(results.resources);
+//   } catch (error) {
+//     //console.error('Error deleting audio resources:', error);
+//     //res.status(500).json({ success: false, message: 'Error fetching audio resources' });
+//   }
+// });
 
 app.post('/api/update-tags', async (req, res) => {
   console.log("hello from backend, /api/update-tags");

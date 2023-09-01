@@ -9,6 +9,7 @@ const SheetMusic = () => {
     const [tags, setTags] = useState('');
     const [imageResources, setImageResources] = useState([]);
     const [activeImage, setActiveImage] = useState(null);
+    const [imgUploaded, setImageUploaded] = useState(false);
   
   const handleTagsChange = (event) => {
     setTags(event.target.value);
@@ -29,11 +30,15 @@ const SheetMusic = () => {
     async function fetchImageResources() {
         try {
           const response = await fetch('/api/get-images');
+//          const data = await response.json();
+//          setImageResources(data);
+
           const data = await response.json();
           setImageResources(data);
-          console.log("data:", data);
+
+          //console.log("imagesResources:", imageResources);
         } catch (error) {
-          console.error('Error fetching audio resources:', error);
+          console.error('Error fetching resources:', error);
         }
       }      
       fetchImageResources();
@@ -57,7 +62,10 @@ const SheetMusic = () => {
                 const data = await response.json();
                 console.log('Uploaded image successfully', data);
                 // will be using modal here to display success message
-                // setImageResources(prevImageResources => [...prevImageResources, data]);
+                //setImageResources(prevImageResources => [...prevImageResources, data]);
+                setImageResources([...imageResources, data.cloudinaryResult]);
+                //console.log("after upload, imagesResources:", imageResources);
+                
 
             } else {
                 console.error('Failed to upload image', response.statusText);
@@ -88,8 +96,8 @@ const SheetMusic = () => {
         </button>
   
             <GalleryWrapper>
-      {imageResources.map(image => (
-        <Thumbnail key={image.public_id} src={image.secure_url} alt={image.public_id} onClick={() => openModal(image)} />
+      {imageResources.map((image, index) => (
+        <Thumbnail key={image.public_id + index} src={image.secure_url} alt={image.public_id} onClick={() => openModal(image)} />
       ))}
     </GalleryWrapper>
 

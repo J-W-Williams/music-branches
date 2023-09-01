@@ -20,7 +20,6 @@ const Collection = () => {
     const handleDeleteTag = async (tagToDelete, id) => {
       const updatedTags = tagsList.filter((tag) => tag !== tagToDelete);
       setTagsList(updatedTags);
-      // API delete call goes here
       console.log("deleting", tagToDelete);
       console.log("from:", id);
       // do an "are you sure?"
@@ -53,14 +52,13 @@ const Collection = () => {
           fetchAudioResources();
       }, [itemDeleted]);
 
+  
+
 
       const updateTags = async (resource) => {
         const tagsToAdd = tagsInput[resource.public_id]?.split(',').map(tag => tag.trim());
       
-        console.log("hello from FE, updateTags");
-        console.log("tagsToAdd:", tagsToAdd);
-
-        // off to /api/update-tags...
+          // off to /api/update-tags...
 
         if (tagsToAdd && tagsToAdd.length > 0) {
         
@@ -77,6 +75,7 @@ const Collection = () => {
       
           if (response.ok) {
             // Update the state or fetch updated data from the backend
+            setTagsList(tagsToAdd);
           } else {
             console.error('Failed to update tags', response.statusText);
           }
@@ -97,20 +96,6 @@ const Collection = () => {
     }
   }
 
-  // const showDeleteX = () => {
-  //   console.log("hello from showDeleteX");
-  // }
-
-  // const handleDeleteTag = async (id) => {
-
-  //   console.log("deleting", id);
-  //   const response = await fetch(`/api/delete-tag/${id}`, {
-  //     method: 'DELETE',
-  //   });
-
-  // }
-
-  //console.log("audioResources:", audioResources);
 
   return (
     <Wrapper>
@@ -125,39 +110,23 @@ const Collection = () => {
             </audio>
             <p>Date: {resource.created_at}</p>
             <p>public_id: {resource.public_id}</p>
-            {/* <p>Tags: {resource.tags}</p> */}
-            {/* Add tags:
-              <textarea value={tags}
-                onChange={handleTagsChange}
-                placeholder="Enter tags separated by commas"></textarea>
-                <button onClick={() => updateTags(tags)}>Add tag(s)</button> */}
             <TagHolder>
               <div>Tags (tap to edit)</div>
               <ul>
-                {/* {resource.tags.map((tag, index) => (
-                  // <li key={index}>{tag}</li>
-                  // this could be a new Component
-                  // to allow for deleting itself
-                  <button key={index} onClick={showDeleteX}>{tag}</button>
-                ))} */}
-
-                {resource.tags.map((tag, index) => (
-                  // <Tag key={index} tag={tag} onDelete={handleDeleteTag} />
+                {resource.tags.map((tag, index) => (             
                   <Tag key={index} tag={tag} onDelete={() => handleDeleteTag(tag, resource.public_id)} />
                  ))}
               </ul>
-            </TagHolder>
-            
+            </TagHolder>            
             <input
-        type="text"
-        placeholder="Add tags (comma-separated)"
-        value={tagsInput[resource.public_id] || ''}
-        onChange={e => handleTagsInputChange(resource.public_id, e.target.value)}
-      />
-      <button onClick={() => updateTags(resource)}>Add new tags</button>
-                  Delete audio clip
-            <button onClick={() => handleDestroy(resource.public_id)}>x</button>
-          
+              type="text"
+              placeholder="Add tags (comma-separated)"
+              value={tagsInput[resource.public_id] || ''}
+              onChange={e => handleTagsInputChange(resource.public_id, e.target.value)}
+            />
+            <button onClick={() => updateTags(resource)}>Add new tags</button>
+            Delete audio clip
+            <button onClick={() => handleDestroy(resource.public_id)}>x</button>          
           </MyListItem>
         ))}
        
@@ -174,8 +143,7 @@ const TagHolder = styled.div`
 `
 
 const MyList = styled.ul`
-    list-style-type: none;
-  
+    list-style-type: none;  
 `
 
 const MyListItem = styled.li`
@@ -187,7 +155,6 @@ const MyListItem = styled.li`
 
 const Wrapper = styled.div`
     text-align: left;
-
 `
 const Line = styled.div`
     border-bottom: 1px solid black;
