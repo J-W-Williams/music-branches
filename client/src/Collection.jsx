@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import styled from "styled-components";
+import Tag from './components/Tag';
 
 const Collection = () => {
 
     const [audioResources, setAudioResources] = useState([]);
     const [itemDeleted, setItemDeleted] = useState(false);
     const [tagsInput, setTagsInput] = useState({});
+    const [tagsList, setTagsList] = useState([]);
 
     const handleTagsInputChange = (publicId, value) => {
       setTagsInput(prevState => ({
@@ -14,7 +16,25 @@ const Collection = () => {
         [publicId]: value,
       }));
     };
-    
+
+    const handleDeleteTag = async (tagToDelete, id) => {
+      const updatedTags = tagsList.filter((tag) => tag !== tagToDelete);
+      setTagsList(updatedTags);
+      // API delete call goes here
+      console.log("deleting", tagToDelete);
+      console.log("from:", id);
+      // do an "are you sure?"
+   
+      const response = await fetch(`/api/delete-tag/${encodeURIComponent(id)}/${encodeURIComponent(tagToDelete)}`, {
+        method: 'DELETE',
+      });
+      
+      console.log("response:", response);
+      if (response.ok) {
+        //setItemDeleted(true);
+      }
+
+    };
     
     useEffect(() => {
  
@@ -77,6 +97,19 @@ const Collection = () => {
     }
   }
 
+  // const showDeleteX = () => {
+  //   console.log("hello from showDeleteX");
+  // }
+
+  // const handleDeleteTag = async (id) => {
+
+  //   console.log("deleting", id);
+  //   const response = await fetch(`/api/delete-tag/${id}`, {
+  //     method: 'DELETE',
+  //   });
+
+  // }
+
   //console.log("audioResources:", audioResources);
 
   return (
@@ -99,14 +132,19 @@ const Collection = () => {
                 placeholder="Enter tags separated by commas"></textarea>
                 <button onClick={() => updateTags(tags)}>Add tag(s)</button> */}
             <TagHolder>
-              <div>Tags:</div>
+              <div>Tags (tap to edit)</div>
               <ul>
-                {resource.tags.map((tag, index) => (
+                {/* {resource.tags.map((tag, index) => (
                   // <li key={index}>{tag}</li>
                   // this could be a new Component
                   // to allow for deleting itself
-                  <button key={index}>{tag}</button>
-                ))}
+                  <button key={index} onClick={showDeleteX}>{tag}</button>
+                ))} */}
+
+                {resource.tags.map((tag, index) => (
+                  // <Tag key={index} tag={tag} onDelete={handleDeleteTag} />
+                  <Tag key={index} tag={tag} onDelete={() => handleDeleteTag(tag, resource.public_id)} />
+                 ))}
               </ul>
             </TagHolder>
             
@@ -116,8 +154,8 @@ const Collection = () => {
         value={tagsInput[resource.public_id] || ''}
         onChange={e => handleTagsInputChange(resource.public_id, e.target.value)}
       />
-      <button onClick={() => updateTags(resource)}>Update Tags</button>
-
+      <button onClick={() => updateTags(resource)}>Add new tags</button>
+                  Delete audio clip
             <button onClick={() => handleDestroy(resource.public_id)}>x</button>
           
           </MyListItem>
