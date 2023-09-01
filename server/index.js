@@ -14,6 +14,9 @@ const { MONGO_URI } = process.env;
 const port = 8000;
 const app = express();
 
+app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
+
 // Multer configuration
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -236,7 +239,41 @@ app.delete('/api/delete-audio/:id', async (req, res) => {
 
 app.post('/api/update-tags', async (req, res) => {
   console.log("hello from backend, /api/update-tags");
-  console.log("I have this:", req);
+  console.log("I have this:", req.body);
+
+  const tagsToAdd = req.body.tags;
+  const publicId = req.body.publicId;
+  console.log("publicId:", publicId)
+  
+  // update tags in Cloudinary
+  const result = await cloudinary.uploader.add_tag(tagsToAdd, publicId, {type : 'upload', resource_type : 'video'});
+  console.log("response", result);
+
+  // update tags in Mongo
+  const client = new MongoClient(MONGO_URI, options);
+  try {
+    await client.connect();
+    const dbName = "music-branches";
+    const db = client.db(dbName);
+ 
+    const query = { public_id: publicId };
+    const action = {
+      $push: {
+        tags: { $each: tagsToAdd },
+      },
+    };
+    const results = await db.collection("users").updateOne(query, action);
+
+   
+
+    console.log("mongo result:", results);
+    client.close();
+    //return res.status(201).json({ status: 201, message: "success", result });
+  } catch (err) {
+    //res.status(500).json({ status: 500, message: err.message });
+  }
+
+  //
 
   //  const { tags } = req.body;
 
