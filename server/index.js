@@ -299,13 +299,13 @@ app.post('/api/update-tags', async (req, res) => {
   const publicId = req.body.publicId;
   console.log("publicId:", publicId)
   
-  // update tags in Cloudinary
-  const result = await cloudinary.uploader.add_tag(tagsToAdd, publicId, {type : 'upload', resource_type : 'video'});
-  console.log("response", result);
-
-  // update tags in Mongo
-  const client = new MongoClient(MONGO_URI, options);
   try {
+    // Update tags in Cloudinary
+    const cloudinaryResult = await cloudinary.uploader.add_tag(tagsToAdd, publicId, { type: 'upload', resource_type: 'video' });
+    console.log("Cloudinary response", cloudinaryResult);
+
+    // Update tags in MongoDB
+    const client = new MongoClient(MONGO_URI, options);
     await client.connect();
     const dbName = "music-branches";
     const db = client.db(dbName);
@@ -316,23 +316,62 @@ app.post('/api/update-tags', async (req, res) => {
         tags: { $each: tagsToAdd },
       },
     };
-    const results = await db.collection("users").updateOne(query, action);
+    const mongoResult = await db.collection("users").updateOne(query, action);
+
+    console.log("Mongo result:", mongoResult);
+    client.close();
+
+    // Both Cloudinary and MongoDB operations completed successfully
+    return res.status(200).json({ message: "Success" });
+  } catch (error) {
+    console.error('Error updating tags:', error);
+    return res.status(500).json({ message: 'Error updating tags' });
+  }
+});
+
+
+// app.post('/api/update-tags', async (req, res) => {
+//   console.log("hello from backend, /api/update-tags");
+//   console.log("I have this:", req.body);
+
+//   const tagsToAdd = req.body.tags;
+//   const publicId = req.body.publicId;
+//   console.log("publicId:", publicId)
+  
+//   // update tags in Cloudinary
+//   const result = await cloudinary.uploader.add_tag(tagsToAdd, publicId, {type : 'upload', resource_type : 'video'});
+//   console.log("response", result);
+
+//   // update tags in Mongo
+//   const client = new MongoClient(MONGO_URI, options);
+//   try {
+//     await client.connect();
+//     const dbName = "music-branches";
+//     const db = client.db(dbName);
+ 
+//     const query = { public_id: publicId };
+//     const action = {
+//       $push: {
+//         tags: { $each: tagsToAdd },
+//       },
+//     };
+//     const results = await db.collection("users").updateOne(query, action);
 
    
 
-    console.log("mongo result:", results);
-    client.close();
-    //return res.status(201).json({ status: 201, message: "success", result });
-  } catch (err) {
-    //res.status(500).json({ status: 500, message: err.message });
-  }
+//     console.log("mongo result:", results);
+//     client.close();
+//     //return res.status(201).json({ status: 201, message: "success", result });
+//   } catch (err) {
+//     //res.status(500).json({ status: 500, message: err.message });
+//   }
 
  
-})
+// })
+
 
 app.delete('/api/delete-tag/:publicId/:tags', async (req, res) => {
   console.log("hello from backend, /api/delete-tag");
-  // console.log("I have this:", req.body);
 
   const publicId = req.params.publicId;
   const tagsToDelete = req.params.tags;
@@ -340,45 +379,87 @@ app.delete('/api/delete-tag/:publicId/:tags', async (req, res) => {
   console.log("publicId:", publicId);
   console.log("tagsToDelete:", tagsToDelete);
 
-  
-  // // update tags in Cloudinary
-  const result = await cloudinary.uploader.remove_tag(tagsToDelete, publicId, {type : 'upload', resource_type : 'video'});
-  console.log("response", result);
-
-  // // update tags in Mongo
-  const client = new MongoClient(MONGO_URI, options);
   try {
-    console.log("in mongo");
+    // Update tags in Cloudinary
+    const cloudinaryResult = await cloudinary.uploader.remove_tag(tagsToDelete, publicId, { type: 'upload', resource_type: 'video' });
+    console.log("Cloudinary response", cloudinaryResult);
+
+    // Update tags in MongoDB
+    const client = new MongoClient(MONGO_URI, options);
     await client.connect();
     const dbName = "music-branches";
     const db = client.db(dbName);
-    
-    console.log("mongo tagsToDelete:", tagsToDelete);
-    console.log("this is a:", typeof(tagsToDelete));
-    const tagArray = [tagsToDelete];
-    console.log("mongo tagArray:", tagArray);
-    console.log("this is an:", typeof(tagArray));
 
     const query = { public_id: publicId };
     const action = {
       $pull: {
-        tags: { $in: tagArray },
+        tags: { $in: [tagsToDelete] },
       },
     };
-    console.log("query:", query);
-    console.log("action:", action);
-   
-    const results = await db.collection("users").updateOne(query, action);
-   
-    console.log("mongo result:", results);
+
+    const mongoResult = await db.collection("users").updateOne(query, action);
+
+    console.log("Mongo result:", mongoResult);
     client.close();
-    //return res.status(201).json({ status: 201, message: "success", result });
-  } catch (err) {
-    //res.status(500).json({ status: 500, message: err.message });
+
+    // Both Cloudinary and MongoDB operations completed successfully
+    return res.status(200).json({ message: "Success" });
+  } catch (error) {
+    console.error('Error deleting tags:', error);
+    return res.status(500).json({ message: 'Error deleting tags' });
   }
+});
+
+
+// app.delete('/api/delete-tag/:publicId/:tags', async (req, res) => {
+//   console.log("hello from backend, /api/delete-tag");
+//   // console.log("I have this:", req.body);
+
+//   const publicId = req.params.publicId;
+//   const tagsToDelete = req.params.tags;
+
+//   console.log("publicId:", publicId);
+//   console.log("tagsToDelete:", tagsToDelete);
+
+  
+//   // // update tags in Cloudinary
+//   const result = await cloudinary.uploader.remove_tag(tagsToDelete, publicId, {type : 'upload', resource_type : 'video'});
+//   console.log("response", result);
+
+//   // // update tags in Mongo
+//   const client = new MongoClient(MONGO_URI, options);
+//   try {
+//     console.log("in mongo");
+//     await client.connect();
+//     const dbName = "music-branches";
+//     const db = client.db(dbName);
+    
+//     console.log("mongo tagsToDelete:", tagsToDelete);
+//     console.log("this is a:", typeof(tagsToDelete));
+//     const tagArray = [tagsToDelete];
+//     console.log("mongo tagArray:", tagArray);
+//     console.log("this is an:", typeof(tagArray));
+
+//     const query = { public_id: publicId };
+//     const action = {
+//       $pull: {
+//         tags: { $in: tagArray },
+//       },
+//     };
+//     console.log("query:", query);
+//     console.log("action:", action);
+   
+//     const results = await db.collection("users").updateOne(query, action);
+   
+//     console.log("mongo result:", results);
+//     client.close();
+//     //return res.status(201).json({ status: 201, message: "success", result });
+//   } catch (err) {
+//     //res.status(500).json({ status: 500, message: err.message });
+//   }
 
  
-})
+// })
 
 
 app.listen(port, () => {
