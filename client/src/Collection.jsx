@@ -7,6 +7,7 @@ import { useUserContext } from './context/UserContext';
 const Collection = () => {
 
     const [audioResources, setAudioResources] = useState([]);
+    const [message, setMessage] = useState('');
     const [itemDeleted, setItemDeleted] = useState(false);
     const [tagsInput, setTagsInput] = useState({});
     const [tagsList, setTagsList] = useState([]);
@@ -47,16 +48,27 @@ const Collection = () => {
       async function fetchAudioResources() {
           try {
             const response = await fetch(`/api/get-audio?user=${loggedInUser}&project=${selectedProject}`);
-
             const data = await response.json();
-            setAudioResources(data);
+            if (response.status === 200) {
+              
+              if (data.message === 'No clips found for this user/project combination') {
+                setAudioResources([]);
+                setMessage('No clips yet!');
+              } else {
+                setAudioResources(data);
+                setMessage(''); 
+              }
+            } else {
+              
+              console.error('Error fetching audio resources:', data.message);
+            }
           } catch (error) {
             console.error('Error fetching audio resources:', error);
           }
         }
         
         fetchAudioResources();
-    }, [itemDeleted, tagsList]);
+    }, [itemDeleted, tagsList, selectedProject]);
 
     // useEffect(() => {
  
@@ -126,6 +138,7 @@ const Collection = () => {
      
       <div>
       <h2>Audio Collection!</h2>
+      <p>{message}</p>
       <MyList>
         {audioResources.map(resource => (
           <MyListItem key={resource.public_id}>
