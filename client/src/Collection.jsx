@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import styled from "styled-components";
 import Tag from './components/Tag';
+import { useUserContext } from './context/UserContext';
 
 const Collection = () => {
 
@@ -10,6 +11,7 @@ const Collection = () => {
     const [tagsInput, setTagsInput] = useState({});
     const [tagsList, setTagsList] = useState([]);
     const [tagDeleted, setTagDeleted] = useState(false);
+    const { loggedInUser, logout, selectedProject } = useUserContext();
 
     const handleTagsInputChange = (publicId, value) => {
       setTagsInput(prevState => ({
@@ -36,23 +38,42 @@ const Collection = () => {
       }
 
     };
+   
     
     useEffect(() => {
  
-        // it would be fun to be able to fling these clips around.
-  
-        async function fetchAudioResources() {
-            try {
-              const response = await fetch('/api/get-audio');
-              const data = await response.json();
-              setAudioResources(data);
-            } catch (error) {
-              console.error('Error fetching audio resources:', error);
-            }
+      // it would be fun to be able to fling these clips around.
+
+      async function fetchAudioResources() {
+          try {
+            const response = await fetch(`/api/get-audio?user=${loggedInUser}&project=${selectedProject}`);
+
+            const data = await response.json();
+            setAudioResources(data);
+          } catch (error) {
+            console.error('Error fetching audio resources:', error);
           }
+        }
+        
+        fetchAudioResources();
+    }, [itemDeleted, tagsList]);
+
+    // useEffect(() => {
+ 
+    //     // it would be fun to be able to fling these clips around.
+  
+    //     async function fetchAudioResources() {
+    //         try {
+    //           const response = await fetch('/api/get-audio');
+    //           const data = await response.json();
+    //           setAudioResources(data);
+    //         } catch (error) {
+    //           console.error('Error fetching audio resources:', error);
+    //         }
+    //       }
           
-          fetchAudioResources();
-      }, [itemDeleted, tagsList]);
+    //       fetchAudioResources();
+    //   }, [itemDeleted, tagsList]);
 
   
 

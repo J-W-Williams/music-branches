@@ -49,36 +49,60 @@ app.get('/', (req, res) => {
 
 app.get('/api/get-audio', async (req, res) => {
     try {
-      
-      const results = await fetch(`https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/resources/video`, {
+      // const user = req.query.user;
+      // const project = req.query.project;
+      let publicIds;
+      const user = decodeURIComponent(req.query.user);
+      const project = decodeURIComponent(req.query.project);
+
+      console.log("hello from backend,", user, project);
+     
+      // lookup audio clips from user/project in MongoDB
+      // return just the public_Ids of the clips
+      try {
+        const client = new MongoClient(MONGO_URI, options);
+        await client.connect();
+        const dbName = "music-branches";
+        const db = client.db(dbName);
+        const audioClips = await db.collection("users")
+        .find({ user, project }, { projection: { public_id: 1, _id: 0 } })
+        .toArray();
+        // const audioClips = await db.collection("users").find();
+        console.log("audioClips:", audioClips);
+        // create comma-separated strings:
+        publicIds = await audioClips.map(clip => clip.public_id).join(',');
+        console.log("publicIds:", publicIds);
+
+        client.close();
+        //return res.status(201).json({ status: 201, message: "success", mongoResult });
+    } catch (err) {
+        //res.status(500).json({ status: 500, message: err.message });
+        console.log("failed to lookup user/project from mongo");
+    }
+
+    
+    console.log("publicIds:", publicIds);
+
+      // const results = await fetch(`https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/resources/video/`, {
+        const results = await fetch(`https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/resources/video?public_ids=${publicIds}`, {
+
         headers: {
           Authorization: `Basic ${Buffer.from(process.env.CLOUDINARY_API_KEY + ':' + process.env.CLOUDINARY_API_SECRET).toString('base64')}`
         }
       }).then(r => r.json());
 
       // need second lookup for tags
-      // const tagsArray = [];      
-      // for (let i=0; i<results.resources.length; i++) {
-      //   await cloudinary.api.resource(results.resources[i].public_id,{type : 'upload', resource_type : 'video'}).then(result=>tagsArray.push(result.tags));
-      // }
-      // redo this as a map
-
       const tagsArray = await Promise.all(results.resources.map(async (resource) => {
         const result = await cloudinary.api.resource(resource.public_id, { type: 'upload', resource_type: 'video' });
         return result.tags;
       }));
 
-      console.log("results.resources:", results.resources);
-      console.log("tagsArray:", tagsArray);
-
+      // merge tags with main array before returning
       const mergedArray = results.resources.map((item, index) => {
         const tags = tagsArray[index] || [];
         return { ...item, tags };
       });
       
-      console.log(mergedArray);
-
-
       // res.json(results.resources);
       res.json(mergedArray);
     } catch (error) {
@@ -95,7 +119,8 @@ app.post('/api/upload-audio', upload.single('audio'), async (req, res) => {
   console.log("hello from backend, /api/upload-audio");
   console.log("I have this:", req.file);
 
-  const { tags } = req.body;
+  const { tags, user, project } = req.body;
+  console.log("user / project:", user, project);
 
   try {
 
@@ -113,13 +138,21 @@ app.post('/api/upload-audio', upload.single('audio'), async (req, res) => {
     fs.unlinkSync(tempFilePath);
     res.json({ success: true, message: 'Audio uploaded successfully' });
 
+    // add user & project key:value pairs to the object
+    const updatedResult = {
+      ...result, 
+      user: user, 
+      project: project,
+    };
+
+    // then add to MongoDB
     const client = new MongoClient(MONGO_URI, options);
         try {
             await client.connect();
             const dbName = "music-branches";
             const db = client.db(dbName);
             console.log("hello from attempted mongo");
-            const mongoResult = await db.collection("users").insertOne(result);
+            const mongoResult = await db.collection("users").insertOne(updatedResult);
             client.close();
             //return res.status(201).json({ status: 201, message: "success", mongoResult });
         } catch (err) {
