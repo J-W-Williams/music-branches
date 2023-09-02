@@ -82,6 +82,12 @@ app.get('/api/get-audio', async (req, res) => {
 
     
     console.log("publicIds:", publicIds);
+    if (!publicIds) {
+      // Return a response indicating no clips were found
+      return res.status(200).json({ message: 'No clips found for this user/project combination' });
+
+    }
+    
 
       // const results = await fetch(`https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/resources/video/`, {
         const results = await fetch(`https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/resources/video?public_ids=${publicIds}`, {
