@@ -17,10 +17,13 @@ const HomePage = () => {
     const addAudioElement = async (blob) => {
         console.log("blob", blob);
         //const tags = "happy, sunny, A, 7/8";
-               
+    
+        
         const formData = new FormData();
         formData.append('audio', blob);
         formData.append('tags', tags);
+        formData.append('user', loggedInUser);
+        formData.append('project', selectedProject);
     
         try {
           

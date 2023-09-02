@@ -37,7 +37,7 @@ const Header = () => {
           <LogoutButton onClick={logout}>Logout</LogoutButton>   
         </Users>
         <Users>               
-          <div>Select project:</div>
+          {/* <div>Select project:</div>
           <select onChange={handleProjectChange}>
             {userProjects[loggedInUser].map((project) => (
               // this could also be the project.id
@@ -46,7 +46,19 @@ const Header = () => {
                 {project.name}
               </option>
             ))}
+          </select> */}
+          <select onChange={handleProjectChange} defaultValue="">
+              <option value="" disabled>
+                Select Project
+              </option>
+              {userProjects[loggedInUser].map((project) => (
+                <option key={project.id} value={project.name}>
+                  {project.name}
+                </option>
+              ))}
           </select>
+
+
           </Users>
           <Users>
           <form onSubmit={handleNewProjectSubmit}>

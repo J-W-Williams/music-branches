@@ -8,8 +8,7 @@ export const UserProvider = ({ children }) => {
         localStorage.getItem('loggedInUser') || null
       );
 
-      const [selectedProject, setSelectedProject] = useState(null);
-
+      const [selectedProject, setSelectedProject] = useState("no project selected");
 
       const [userProjects, setUserProjects] = useState({
         user1: [{ id: 1, name: 'Project 1' }, { id: 2, name: 'Project 2' }, { id: 3, name: 'Project 3' }],
@@ -24,6 +23,7 @@ export const UserProvider = ({ children }) => {
   const logout = () => {
     setLoggedInUser(null);
     localStorage.removeItem('loggedInUser');setLoggedInUser(null);
+    setSelectedProject("No project selected");
   };
 
   const createProject = (user, projectName) => {
