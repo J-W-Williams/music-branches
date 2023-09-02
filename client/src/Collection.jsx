@@ -9,6 +9,7 @@ const Collection = () => {
     const [itemDeleted, setItemDeleted] = useState(false);
     const [tagsInput, setTagsInput] = useState({});
     const [tagsList, setTagsList] = useState([]);
+    const [tagDeleted, setTagDeleted] = useState(false);
 
     const handleTagsInputChange = (publicId, value) => {
       setTagsInput(prevState => ({
@@ -30,7 +31,8 @@ const Collection = () => {
       
       console.log("response:", response);
       if (response.ok) {
-        //setItemDeleted(true);
+        console.log("tag deleted");
+        setTagDeleted(true);
       }
 
     };
@@ -50,7 +52,7 @@ const Collection = () => {
           }
           
           fetchAudioResources();
-      }, [itemDeleted]);
+      }, [itemDeleted, tagsList]);
 
   
 
@@ -75,6 +77,7 @@ const Collection = () => {
       
           if (response.ok) {
             // Update the state or fetch updated data from the backend
+            console.log("tags updated.")
             setTagsList(tagsToAdd);
           } else {
             console.error('Failed to update tags', response.statusText);
@@ -110,14 +113,16 @@ const Collection = () => {
             </audio>
             <p>Date: {resource.created_at}</p>
             <p>public_id: {resource.public_id}</p>
-            <TagHolder>
-              <div>Tags (tap to edit)</div>
+           
+              <div>Tags (tap to delete): </div>
               <ul>
+              <TagHolder>
                 {resource.tags.map((tag, index) => (             
                   <Tag key={index} tag={tag} onDelete={() => handleDeleteTag(tag, resource.public_id)} />
                  ))}
+                 </TagHolder> 
               </ul>
-            </TagHolder>            
+                       
             <input
               type="text"
               placeholder="Add tags (comma-separated)"
