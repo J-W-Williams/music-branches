@@ -1,20 +1,26 @@
 import { useState, useEffect } from 'react'
 import styled from "styled-components";
+import { useUserContext } from './context/UserContext';
+import TagManager from './components/TagManager';
 
 const SheetMusic = () => {
 
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState('');
     const handleSelectFile = (e) => setFile(e.target.files[0]);
     const [tags, setTags] = useState('');
+    const [tagsInput, setTagsInput] = useState('');
+    const { loggedInUser, logout, selectedProject } = useUserContext();
     const [imageResources, setImageResources] = useState([]);
     const [activeImage, setActiveImage] = useState(null);
     const [imgUploaded, setImageUploaded] = useState(false);
+    const [tagDeleted, setTagDeleted] = useState(false);
+    const [tagUpdated, setTagUpdated] = useState(false);
   
   const handleTagsChange = (event) => {
     setTags(event.target.value);
   };
-
 
   const openModal = image => {
     setActiveImage(image);
@@ -29,21 +35,67 @@ const SheetMusic = () => {
     // fetch images when component mounts
     async function fetchImageResources() {
         try {
-          const response = await fetch('/api/get-images');
-//          const data = await response.json();
-//          setImageResources(data);
-
+          const response = await fetch(`/api/get-images?user=${loggedInUser}&project=${selectedProject}`);
           const data = await response.json();
-          setImageResources(data);
-
-          //console.log("imagesResources:", imageResources);
+          if (response.status === 200) {              
+            if (data.message === 'No sheet music found for this user/project combination') {
+              setImageResources([]);
+              setMessage('No sheet music yet!');
+            } else {
+              setImageResources(data);
+              setMessage(''); 
+            }
+          } else {           
+            console.error('Error fetching audio resources:', data.message);
+          }
         } catch (error) {
           console.error('Error fetching resources:', error);
         }
       }      
       fetchImageResources();
-  }, []);
+  }, [selectedProject, tagDeleted, tagUpdated]);
 
+
+  const handleDeleteImageTag = async (tagToDelete, id) => {
+    setTagDeleted(false);
+    const collectionName = 'sheets';
+    const response = await fetch(`/api/delete-tag/${encodeURIComponent(id)}/${encodeURIComponent(tagToDelete)}/${encodeURIComponent(collectionName)}`, {
+      method: 'DELETE',
+    });      
+    console.log("response:", response);
+    if (response.ok) {
+      console.log("tag deleted");
+      setTagDeleted(true);
+    } else {
+      // Handle error
+    }
+  };
+  
+  const updateImageTags = async (resource, newTags) => {
+    const collectionName = 'sheets';
+    setTagUpdated(false);
+    if (newTags && newTags.length > 0) {
+      const response = await fetch(`/api/update-tags/${collectionName}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          publicId: resource.public_id,
+          tags: newTags,
+        }),
+      });
+  
+      if (response.ok) {
+        console.log('tags updated.');
+        
+        setTagsInput('');
+        setTagUpdated(true);
+      } else {
+        console.error('Failed to update tags', response.statusText);
+      }
+    }
+  };
 
     const handleUpload = async () => {
         try {
@@ -51,6 +103,8 @@ const SheetMusic = () => {
             const formData = new FormData();
             formData.append('image', file);
             formData.append('tags', tags);
+            formData.append('user', loggedInUser);
+            formData.append('project', selectedProject);
 
             const response = await fetch('/api/upload-image', {
                 method: 'POST',
@@ -80,6 +134,7 @@ const SheetMusic = () => {
   return (
     <Wrapper>
         <h2>Sheet Music Collection!</h2>
+        <p>{message}</p>
         <input
             id="file"
             type="file"
@@ -95,9 +150,22 @@ const SheetMusic = () => {
             {loading ? "uploading..." : "upload to cloudinary"}
         </button>
   
-            <GalleryWrapper>
+      <GalleryWrapper>
       {imageResources.map((image, index) => (
+        <>
+        <p>Date: {image.created_at}</p>
         <Thumbnail key={image.public_id + index} src={image.secure_url} alt={image.public_id} onClick={() => openModal(image)} />
+        {/* <TagManager resource={image} onUpdateTags={updateImageTags} onDeleteTag={handleDeleteImageTag} /> */}
+        {/* <TagManager resource={image} onDeleteTag={handleDeleteImageTag}   onUpdateTags={(resource, newTags) => updateImageTags(image, tagsInput, newTags)}       
+        /> */}
+        <TagManager
+          resource={image}
+          onUpdateTags={updateImageTags}
+          onDeleteTag={handleDeleteImageTag}
+          tagsInput={tagsInput} // Pass tagsInput to the TagManager
+        />
+     
+        </>
       ))}
     </GalleryWrapper>
 
@@ -162,6 +230,10 @@ const Thumbnail = styled.img`
 
 const Wrapper = styled.div`
     text-align: left;
+`
+
+const MyListItem = styled.li`
+  
 `
 
 export default SheetMusic;

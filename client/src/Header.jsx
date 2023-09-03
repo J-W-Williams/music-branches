@@ -128,9 +128,10 @@ const LinkText = styled.div`
 
 `
 
-const Title = styled.h2`
-    /* font-family: 'Tulpen One', cursive;
-    font-size: 40px; */
+const Title = styled.div`
+  font-family: 'Sirin Stencil', cursive;
+  font-size: 50px;
+  text-decoration: none;
 `
 
 

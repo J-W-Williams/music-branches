@@ -49,8 +49,6 @@ app.get('/', (req, res) => {
 
 app.get('/api/get-audio', async (req, res) => {
     try {
-      // const user = req.query.user;
-      // const project = req.query.project;
       let publicIds;
       const user = decodeURIComponent(req.query.user);
       const project = decodeURIComponent(req.query.project);
@@ -172,7 +170,8 @@ app.post('/api/upload-audio', upload.single('audio'), async (req, res) => {
 })
 
 app.post('/api/upload-image', upload.single('image'), async (req, res) => {
-  const { tags } = req.body;
+ 
+  const { tags, user, project } = req.body;
 
   try {
     const b64 = Buffer.from(req.file.buffer).toString("base64");
@@ -182,13 +181,21 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
     const cloudinaryResult = await cloudinary.uploader.upload(dataURI, { tags: tags });
     console.log('Uploaded to Cloudinary:', cloudinaryResult);
 
+ // add user & project key:value pairs to the object
+ const updatedResult = {
+  ...cloudinaryResult, 
+  user: user, 
+  project: project,
+};
+
+
     // Add MongoDB info
     const client = new MongoClient(MONGO_URI, options);
     await client.connect();
     const dbName = "music-branches";
     const db = client.db(dbName);
 
-    const mongoResult = await db.collection("sheets").insertOne(cloudinaryResult);
+    const mongoResult = await db.collection("sheets").insertOne(updatedResult);
     client.close();
 
     res.status(200).json({ success: true, message: 'Image uploaded successfully', cloudinaryResult, mongoResult });
@@ -236,9 +243,44 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
 
 
 app.get('/api/get-images', async (req, res) => {
+
+  // get images for current user/project
+
   try {
     
-    const results = await fetch(`https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/resources/image`, {
+    let publicIds;
+    const user = decodeURIComponent(req.query.user);
+    const project = decodeURIComponent(req.query.project);
+
+    // look up images using user / project in Mongo
+    // return just the public_Ids of the images
+
+    try {
+      const client = new MongoClient(MONGO_URI, options);
+      await client.connect();
+      const dbName = "music-branches";
+      const db = client.db(dbName);
+      const audioClips = await db.collection("sheets")
+      .find({ user, project }, { projection: { public_id: 1, _id: 0 } })
+      .toArray();
+      console.log("audioClips:", audioClips);
+      // create comma-separated strings:
+      publicIds = await audioClips.map(clip => clip.public_id).join(',');
+      console.log("publicIds:", publicIds);
+      client.close();
+      //return res.status(201).json({ status: 201, message: "success", mongoResult });
+    } catch (err) {
+      //res.status(500).json({ status: 500, message: err.message });
+      console.log("failed to lookup user/project from mongo");
+    }
+
+    if (!publicIds) {
+      // Return a response indicating no clips were found
+      return res.status(200).json({ message: 'No sheet music found for this user/project combination' });
+
+    }
+
+    const results = await fetch(`https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/resources/image?public_ids=${publicIds}`, {
       headers: {
         Authorization: `Basic ${Buffer.from(process.env.CLOUDINARY_API_KEY + ':' + process.env.CLOUDINARY_API_SECRET).toString('base64')}`
       }
@@ -246,10 +288,22 @@ app.get('/api/get-images', async (req, res) => {
 
     //console.log("results:", results);
 
-    res.json(results.resources);
+    // need second lookup for tags
+    const tagsArray = await Promise.all(results.resources.map(async (resource) => {
+      const result = await cloudinary.api.resource(resource.public_id, { type: 'upload', resource_type: 'image' });
+      return result.tags;
+    }));
+
+  // merge tags with main array before returning
+  const mergedArray = results.resources.map((item, index) => {
+    const tags = tagsArray[index] || [];
+    return { ...item, tags };
+  });
+
+    res.json(mergedArray);
   } catch (error) {
-    console.error('Error fetching audio resources:', error);
-    res.status(500).json({ success: false, message: 'Error fetching audio resources' });
+    console.error('Error fetching image resources:', error);
+    res.status(500).json({ success: false, message: 'Error fetching image resources' });
   }
 });
 
@@ -330,17 +384,26 @@ app.delete('/api/delete-audio/:id', async (req, res) => {
 //   }
 // });
 
-app.post('/api/update-tags', async (req, res) => {
+
+app.post('/api/update-tags/:collection', async (req, res) => {
   console.log("hello from backend, /api/update-tags");
   console.log("I have this:", req.body);
 
   const tagsToAdd = req.body.tags;
   const publicId = req.body.publicId;
+  const collectionName = req.params.collection; // Added parameter for collection name
   console.log("publicId:", publicId)
+  let resourceType = "image";
+
+  if (collectionName === "users") {
+    resourceType = "video"
+  } else {
+    resourceType = "image"
+  }
   
   try {
     // Update tags in Cloudinary
-    const cloudinaryResult = await cloudinary.uploader.add_tag(tagsToAdd, publicId, { type: 'upload', resource_type: 'video' });
+    const cloudinaryResult = await cloudinary.uploader.add_tag(tagsToAdd, publicId, { type: 'upload', resource_type: resourceType });
     console.log("Cloudinary response", cloudinaryResult);
 
     // Update tags in MongoDB
@@ -355,7 +418,8 @@ app.post('/api/update-tags', async (req, res) => {
         tags: { $each: tagsToAdd },
       },
     };
-    const mongoResult = await db.collection("users").updateOne(query, action);
+    // Use the collection name parameter to dynamically select the collection
+    const mongoResult = await db.collection(collectionName).updateOne(query, action);
 
     console.log("Mongo result:", mongoResult);
     client.close();
@@ -367,6 +431,45 @@ app.post('/api/update-tags', async (req, res) => {
     return res.status(500).json({ message: 'Error updating tags' });
   }
 });
+
+
+// app.post('/api/update-tags', async (req, res) => {
+//   console.log("hello from backend, /api/update-tags");
+//   console.log("I have this:", req.body);
+
+//   const tagsToAdd = req.body.tags;
+//   const publicId = req.body.publicId;
+//   console.log("publicId:", publicId)
+  
+//   try {
+//     // Update tags in Cloudinary
+//     const cloudinaryResult = await cloudinary.uploader.add_tag(tagsToAdd, publicId, { type: 'upload', resource_type: 'video' });
+//     console.log("Cloudinary response", cloudinaryResult);
+
+//     // Update tags in MongoDB
+//     const client = new MongoClient(MONGO_URI, options);
+//     await client.connect();
+//     const dbName = "music-branches";
+//     const db = client.db(dbName);
+ 
+//     const query = { public_id: publicId };
+//     const action = {
+//       $push: {
+//         tags: { $each: tagsToAdd },
+//       },
+//     };
+//     const mongoResult = await db.collection("users").updateOne(query, action);
+
+//     console.log("Mongo result:", mongoResult);
+//     client.close();
+
+//     // Both Cloudinary and MongoDB operations completed successfully
+//     return res.status(200).json({ message: "Success" });
+//   } catch (error) {
+//     console.error('Error updating tags:', error);
+//     return res.status(500).json({ message: 'Error updating tags' });
+//   }
+// });
 
 
 // app.post('/api/update-tags', async (req, res) => {
@@ -409,18 +512,27 @@ app.post('/api/update-tags', async (req, res) => {
 // })
 
 
-app.delete('/api/delete-tag/:publicId/:tags', async (req, res) => {
+app.delete('/api/delete-tag/:publicId/:tags/:collection', async (req, res) => {
   console.log("hello from backend, /api/delete-tag");
 
   const publicId = req.params.publicId;
   const tagsToDelete = req.params.tags;
+  const collectionName = req.params.collection; 
+  let resourceType = "image";
+
+  if (collectionName === "users") {
+    resourceType = "video"
+  } else {
+    resourceType = "image"
+  }
 
   console.log("publicId:", publicId);
   console.log("tagsToDelete:", tagsToDelete);
+  console.log("collectionName:", collectionName);
 
   try {
     // Update tags in Cloudinary
-    const cloudinaryResult = await cloudinary.uploader.remove_tag(tagsToDelete, publicId, { type: 'upload', resource_type: 'video' });
+    const cloudinaryResult = await cloudinary.uploader.remove_tag(tagsToDelete, publicId, { type: 'upload', resource_type: resourceType });
     console.log("Cloudinary response", cloudinaryResult);
 
     // Update tags in MongoDB
@@ -436,7 +548,8 @@ app.delete('/api/delete-tag/:publicId/:tags', async (req, res) => {
       },
     };
 
-    const mongoResult = await db.collection("users").updateOne(query, action);
+    // Use the collection name parameter to dynamically select the collection
+    const mongoResult = await db.collection(collectionName).updateOne(query, action);
 
     console.log("Mongo result:", mongoResult);
     client.close();
@@ -448,6 +561,47 @@ app.delete('/api/delete-tag/:publicId/:tags', async (req, res) => {
     return res.status(500).json({ message: 'Error deleting tags' });
   }
 });
+
+
+// app.delete('/api/delete-tag/:publicId/:tags', async (req, res) => {
+//   console.log("hello from backend, /api/delete-tag");
+
+//   const publicId = req.params.publicId;
+//   const tagsToDelete = req.params.tags;
+
+//   console.log("publicId:", publicId);
+//   console.log("tagsToDelete:", tagsToDelete);
+
+//   try {
+//     // Update tags in Cloudinary
+//     const cloudinaryResult = await cloudinary.uploader.remove_tag(tagsToDelete, publicId, { type: 'upload', resource_type: 'video' });
+//     console.log("Cloudinary response", cloudinaryResult);
+
+//     // Update tags in MongoDB
+//     const client = new MongoClient(MONGO_URI, options);
+//     await client.connect();
+//     const dbName = "music-branches";
+//     const db = client.db(dbName);
+
+//     const query = { public_id: publicId };
+//     const action = {
+//       $pull: {
+//         tags: { $in: [tagsToDelete] },
+//       },
+//     };
+
+//     const mongoResult = await db.collection("users").updateOne(query, action);
+
+//     console.log("Mongo result:", mongoResult);
+//     client.close();
+
+//     // Both Cloudinary and MongoDB operations completed successfully
+//     return res.status(200).json({ message: "Success" });
+//   } catch (error) {
+//     console.error('Error deleting tags:', error);
+//     return res.status(500).json({ message: 'Error deleting tags' });
+//   }
+// });
 
 
 // app.delete('/api/delete-tag/:publicId/:tags', async (req, res) => {
