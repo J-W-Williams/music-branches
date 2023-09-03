@@ -21,24 +21,35 @@ const Collection = () => {
       }));
     };
 
-    const handleDeleteTag = async (tagToDelete, id) => {
-      const updatedTags = tagsList.filter((tag) => tag !== tagToDelete);
-      setTagsList(updatedTags);
-      console.log("deleting", tagToDelete);
-      console.log("from:", id);
-      // do an "are you sure?"
-   
-      const response = await fetch(`/api/delete-tag/${encodeURIComponent(id)}/${encodeURIComponent(tagToDelete)}`, {
-        method: 'DELETE',
-      });
-      
-      console.log("response:", response);
-      if (response.ok) {
-        console.log("tag deleted");
-        setTagDeleted(true);
-      }
+const handleDeleteTag = async (tagToDelete, id) => {
+  const collectionName = 'users';
+  const response = await fetch(`/api/delete-tag/${encodeURIComponent(id)}/${encodeURIComponent(tagToDelete)}/${encodeURIComponent(collectionName)}`, {
+    method: 'DELETE',
+  });      
+  console.log("response:", response);
+  if (response.ok) {
+    console.log("tag deleted");
+      setTagDeleted(true);
+  } else {
+    // Handle error
+  }
+};
 
-    };
+    // const handleDeleteTag = async (tagToDelete, id) => {
+    //   const updatedTags = tagsList.filter((tag) => tag !== tagToDelete);
+    //   setTagsList(updatedTags);
+    //   console.log("deleting", tagToDelete);
+    //   console.log("from:", id);
+    //   // do an "are you sure?"   
+    //   const response = await fetch(`/api/delete-tag/${encodeURIComponent(id)}/${encodeURIComponent(tagToDelete)}`, {
+    //     method: 'DELETE',
+    //   });      
+    //   console.log("response:", response);
+    //   if (response.ok) {
+    //     console.log("tag deleted");
+    //     setTagDeleted(true);
+    //   }
+    // };
    
     
     useEffect(() => {
@@ -68,7 +79,7 @@ const Collection = () => {
         }
         
         fetchAudioResources();
-    }, [itemDeleted, tagsList, selectedProject]);
+    }, [itemDeleted, tagsList, selectedProject, tagDeleted]);
 
     // useEffect(() => {
  
@@ -88,35 +99,60 @@ const Collection = () => {
     //   }, [itemDeleted, tagsList]);
 
   
-
-
-      const updateTags = async (resource) => {
-        const tagsToAdd = tagsInput[resource.public_id]?.split(',').map(tag => tag.trim());
-      
-          // off to /api/update-tags...
-
-        if (tagsToAdd && tagsToAdd.length > 0) {
-        
-          const response = await fetch('/api/update-tags', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              publicId: resource.public_id,
-              tags: tagsToAdd,
-            }),
-          });
-      
-          if (response.ok) {
-            // Update the state or fetch updated data from the backend
-            console.log("tags updated.")
-            setTagsList(tagsToAdd);
-          } else {
-            console.error('Failed to update tags', response.statusText);
-          }
+    const updateTags = async (resource) => {
+      const tagsToAdd = tagsInput[resource.public_id]?.split(',').map(tag => tag.trim());
+      const collectionName = 'users'; 
+          
+      if (tagsToAdd && tagsToAdd.length > 0) {
+        const response = await fetch(`/api/update-tags/${collectionName}`, { // Include the collection name in the URL
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            publicId: resource.public_id,
+            tags: tagsToAdd,
+          }),
+        });
+    
+        if (response.ok) {
+          // Update the state or fetch updated data from the backend
+          console.log("tags updated.")
+          setTagsList(tagsToAdd);
+        } else {
+          console.error('Failed to update tags', response.statusText);
         }
-      };
+      }
+    };
+    
+
+      // const updateTags = async (resource) => {
+      //   const tagsToAdd = tagsInput[resource.public_id]?.split(',').map(tag => tag.trim());
+      
+      //     // off to /api/update-tags...
+
+      //   if (tagsToAdd && tagsToAdd.length > 0) {
+        
+      //     const response = await fetch('/api/update-tags', {
+      //       method: 'POST',
+      //       headers: {
+      //         'Content-Type': 'application/json',
+      //       },
+      //       body: JSON.stringify({
+      //         publicId: resource.public_id,
+      //         tags: tagsToAdd,
+      //       }),
+      //     });
+      
+      //     if (response.ok) {
+      //       // Update the state or fetch updated data from the backend
+      //       console.log("tags updated.")
+      //       setTagsList(tagsToAdd);
+      //     } else {
+      //       console.error('Failed to update tags', response.statusText);
+      //     }
+      //   }
+      // };
 
   const handleDestroy = async (id) => {
     console.log("destroying:", id);
