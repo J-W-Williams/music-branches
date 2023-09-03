@@ -47,7 +47,7 @@ const Header = () => {
               </option>
             ))}
           </select> */}
-          <select onChange={handleProjectChange} defaultValue="">
+          {/* <select onChange={handleProjectChange} defaultValue="">
               <option value="" disabled>
                 Select Project
               </option>
@@ -56,7 +56,21 @@ const Header = () => {
                   {project.name}
                 </option>
               ))}
-          </select>
+          </select> */}
+          {userProjects[loggedInUser] ? (
+  <select onChange={handleProjectChange} defaultValue="">
+    <option value="" disabled>
+      Select Project
+    </option>
+    {userProjects[loggedInUser].map((project) => (
+      <option key={project.id} value={project.name}>
+        {project.name}
+      </option>
+    ))}
+  </select>
+) : (
+  <p>Loading projects...</p>
+)}
 
 
           </Users>
