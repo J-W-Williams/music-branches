@@ -19,8 +19,7 @@ const SheetMusic = () => {
     const [tagUpdated, setTagUpdated] = useState(false);
     const [itemDeleted, setItemDeleted] = useState(false);
     const [sortImageBy, setSortImageBy] = useState('newest');
-    //const sortedImageResources = sortImageResources(imageResources);
-
+  
 
     const sortImageResources = (resources) => {
       return resources.slice().sort((a, b) => {

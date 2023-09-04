@@ -161,33 +161,6 @@ const handleDeleteTag = async (tagToDelete, id) => {
     };
     
 
-      // const updateTags = async (resource) => {
-      //   const tagsToAdd = tagsInput[resource.public_id]?.split(',').map(tag => tag.trim());
-      
-      //     // off to /api/update-tags...
-
-      //   if (tagsToAdd && tagsToAdd.length > 0) {
-        
-      //     const response = await fetch('/api/update-tags', {
-      //       method: 'POST',
-      //       headers: {
-      //         'Content-Type': 'application/json',
-      //       },
-      //       body: JSON.stringify({
-      //         publicId: resource.public_id,
-      //         tags: tagsToAdd,
-      //       }),
-      //     });
-      
-      //     if (response.ok) {
-      //       // Update the state or fetch updated data from the backend
-      //       console.log("tags updated.")
-      //       setTagsList(tagsToAdd);
-      //     } else {
-      //       console.error('Failed to update tags', response.statusText);
-      //     }
-      //   }
-      // };
 
       const handleDestroy = async (resourceType, id) => {
         console.log('destroying:', id);
@@ -214,32 +187,16 @@ const handleDeleteTag = async (tagToDelete, id) => {
       };
       
 
-  // const handleDestroy = async (id) => {
-  //   console.log("destroying:", id);
-  //   setItemDeleted(false);
-  //   // do an "are you sure?"
-  //   // will be using this:
-  //   // https://cloudinary.com/documentation/image_upload_api_reference#destroy_method
-  //   const response = await fetch(`/api/delete-audio/${id}`, {
-  //     method: 'DELETE',
-  //   });
-  //   console.log("response:", response);
-  //   if (response.ok) {
-  //     setItemDeleted(true);
-  //   }
-  // }
-
-
   return (
     <Wrapper>
      
-      <div>
-      <h2>Audio Collection!</h2>
+      {/* <div> */}
+      <Title>Your Audio Collection</Title>
       <p>{message}</p>
       
       
-      <div>
-  Sort by:{' '}
+      {/* <div> */}
+  <MainText>Sort by:{' '}</MainText>
   <SortButton
     onClick={() => {
       setSortBy('date');
@@ -274,7 +231,7 @@ const handleDeleteTag = async (tagToDelete, id) => {
   >
     Shortest
   </SortButton>
-</div>
+{/* </div> */}
 
 
 
@@ -283,63 +240,103 @@ const handleDeleteTag = async (tagToDelete, id) => {
         
         {sortResources(audioResources).map(resource => (
           <MyListItem key={resource.public_id}>
-            <audio controls>
-              <source src={resource.secure_url} type="audio/webm" />
-            </audio>
+            <InnerList>
             <p>Date: {resource.created_at}</p>
-            <p>public_id: {resource.public_id}</p>
+            {/* <p>public_id: {resource.public_id}</p> */}
             <p>Duration: {resource.bytes}</p>
-           
+            </InnerList>
             <TagManager
-          resource={resource}
-          onUpdateTags={updateTags}
-          onDeleteTag={handleDeleteTag}
-          tagsInput={tagsInput} 
-        />
-
-              {/* <div>Tags (tap to delete): </div>
-              <ul>
-              <TagHolder>
-                {resource.tags.map((tag, index) => (             
-                  <Tag key={index} tag={tag} onDelete={() => handleDeleteTag(tag, resource.public_id)} />
-                 ))}
-                 </TagHolder> 
-              </ul>
-                       
-            <input
-              type="text"
-              placeholder="Add tags (comma-separated)"
-              value={tagsInput[resource.public_id] || ''}
-              onChange={e => handleTagsInputChange(resource.public_id, e.target.value)}
+              resource={resource}
+              onUpdateTags={updateTags}
+              onDeleteTag={handleDeleteTag}
+              tagsInput={tagsInput} 
             />
-            <button onClick={() => updateTags(resource)}>Add new tags</button> */}
 
-
-            Delete audio clip
-            {/* <button onClick={() => handleDestroy(resource.public_id)}>x</button>  */}
-            <button onClick={() => handleDestroy('video', resource.public_id)}>x</button>
-            Transcribe this clip
-            <button onClick={() => handleTranscribe(resource.secure_url)}>Go !</button>
-            Create chart for this clip
-            <button onClick={() => handleChart(resource.secure_url)}>Go !</button>
-         
+            <MyAudio controls>
+              <source src={resource.secure_url} type="audio/webm" />
+            </MyAudio>
+            
+            <ButtonHolder>
+              <MyButton onClick={() => handleTranscribe(resource.secure_url)}>Transcribe this clip</MyButton>
+              <MyButton onClick={() => handleChart(resource.secure_url)}>Create chart for this clip</MyButton>
+              <MyButton onClick={() => handleDestroy('video', resource.public_id)}>Delete this audio clip</MyButton>
+            </ButtonHolder>
           </MyListItem>
         ))}
        
       </MyList>
      
-    </div>
+    {/* </div> */}
     </Wrapper>
   )
 }
 
+const ButtonHolder = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+`
+const InnerList = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`
+
+const MyAudio = styled.audio`
+
+width: 400px;
+`
+
+const Title = styled.div`
+font-family: 'Sirin Stencil', cursive;
+font-size: 34px;
+color: white;
+padding: 20px;
+`
+
+const MainText = styled.div`
+  font-family: 'Thasadith', sans-serif;
+  font-size: 18px;
+  color: white;
+`
+
 const SortButton = styled.button`
   /* background-color: ${({ active }) => (active ? 'lightblue' : 'white')}; */
+  border-radius: 5px;
   border: 1px solid #ccc;
   padding: 5px 10px;
   margin-right: 10px;
   cursor: pointer;
-`;
+  width: 80px;
+  font-family: 'Thasadith', sans-serif;
+  font-size: 14px;
+  background-color: #1f6feb;
+  color: #fbfffe; 
+  border: none;
+  &:hover {
+    transform: scale(1.05);
+    background-color: #388bfd;
+  }
+`
+
+const MyButton = styled.button`
+  width: 110px;
+  border-radius: 5px;
+  font-family: 'Thasadith', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  background-color: #1f6feb;
+  color: #fbfffe; 
+  cursor: pointer;
+  transition: all ease 400ms;
+  &:hover {
+    transform: scale(1.05);
+    background-color: #388bfd;
+}
+`
 
 const TagHolder = styled.div`
   display: flex;
@@ -348,17 +345,32 @@ const TagHolder = styled.div`
 
 const MyList = styled.ul`
     list-style-type: none;  
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 `
 
 const MyListItem = styled.li`
-    background-color:lightblue;
+    background-color: #22272d;
     width: 400px;
     border-radius: 30px;
     margin: 20px;
+    font-family: 'Thasadith', sans-serif;
+    font-weight: 700;
+    color: white;
 `
 
 const Wrapper = styled.div`
-    text-align: left;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  background-color: #0d1117;
+  text-decoration: none;
+  padding: 20px;
+  height: 100%;
+
 `
 const Line = styled.div`
     border-bottom: 1px solid black;

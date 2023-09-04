@@ -12,9 +12,9 @@ const Tag = ({ tag, onDelete }) => {
       <MyButton className="tag" onClick={handleClick}>
         {tag}
         {showDeleteButton && (
-          <button className="delete-button" onClick={() => onDelete(tag)}>
+          <XButton className="delete-button" onClick={() => onDelete(tag)}>
             X
-          </button>
+          </XButton>
         )}
       </MyButton>
     );
@@ -22,12 +22,26 @@ const Tag = ({ tag, onDelete }) => {
 
 const MyButton = styled.div`
     cursor: pointer;
-    border: 1px solid black;
-    background: lightgrey;
+    border: 1px solid #1f6feb;
+    background: #121d2f;
+    color: white;
     padding: 5px;
     margin: 5px;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    width: 80px;
+`
 
+const XButton = styled.button`
+    cursor: pointer;
+    color: white;
+    background:  #1f6feb;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+    text-align: center;
+    margin-left: 10px;
+    padding-left:2px;
 `
 
 export default Tag;
