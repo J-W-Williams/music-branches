@@ -85,76 +85,11 @@ const filteredImageResources = imageResources.length > 0
 
     console.log("hi")
   }
-  // useEffect(() => {
-  //   async function fetchResources(resourceType, stateSetter) {
-  //     try {
-  //       const response = await fetch(`/api/get-${resourceType}?user=${loggedInUser}&project=${selectedProject}`);
-  //       const data = await response.json();
-  //       if (response.status === 200) {
-  //         if (data.message === `No ${resourceType} found for this user/project combination`) {
-  //           stateSetter([]);
-  //         } else {
-  //           stateSetter(data);
-  //         }
-  //       } else {
-  //         console.error(`Error fetching ${resourceType} resources:`, data.message);
-  //       }
-  //     } catch (error) {
-  //       console.error(`Error fetching ${resourceType} resources:`, error);
-  //     }
-  //   }
   
-  //   fetchResources("audio", setAudioResources);
-  //   fetchResources("images", setImageResources);
-  // }, [selectedProject]);
-  
- 
-
-  // useEffect(() => {
-  //   // it would be fun to be able to fling these clips around.
-  //   async function fetchAudioResources() {
-  //       try {
-  //         const response = await fetch(`/api/get-audio?user=${loggedInUser}&project=${selectedProject}`);
-  //         const data = await response.json();
-  //         if (response.status === 200) {            
-  //           if (data.message === 'No clips found for this user/project combination') {
-  //             setAudioResources([]);
-  //           } else {
-  //             setAudioResources(data);
-  //           }
-  //         } else {           
-  //           console.error('Error fetching audio resources:', data.message);
-  //         }
-  //       } catch (error) {
-  //         console.error('Error fetching audio resources:', error);
-  //       }
-  //     }      
-  //     fetchAudioResources();
-
-  //     async function fetchImageResources() {
-  //       try {
-  //         const response = await fetch(`/api/get-images?user=${loggedInUser}&project=${selectedProject}`);
-  //         const data = await response.json();
-  //         if (response.status === 200) {              
-  //           if (data.message === 'No sheet music found for this user/project combination') {
-  //             setImageResources([]);
-  //           } else {
-  //             setImageResources(data);
-  //           }
-  //         } else {           
-  //           console.error('Error fetching audio resources:', data.message);
-  //         }
-  //       } catch (error) {
-  //         console.error('Error fetching resources:', error);
-  //       }
-  //     }      
-  //     fetchImageResources();
-
-  // }, [selectedProject]);
 
 
   return (
-    <>
+    <Wrapper>
     <h2>
     Dashboard!
     </h2>
@@ -200,9 +135,21 @@ const filteredImageResources = imageResources.length > 0
       )}
 
     </div>
-    </>
+    </Wrapper>
   )
 }
+
+const Wrapper = styled.div`
+    background-color: #0d1117;
+    height: 100%;
+`
+
+const Title = styled.div`
+font-family: 'Sirin Stencil', cursive;
+font-size: 34px;
+color: white;
+padding: 20px;
+`
 
 const Thumbnail = styled.img`
    

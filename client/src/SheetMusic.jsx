@@ -158,25 +158,29 @@ const SheetMusic = () => {
 
   return (
     <Wrapper>
-        <h2>Sheet Music Collection!</h2>
+        <Title>Your Sheet Music Collection!</Title>
         <p>{message}</p>
-     
+       
+        <MyInput>
         <input
             id="file"
             type="file"
             onChange={handleSelectFile}
             multiple={false}
         />
-        <textarea value={tags}
+        </MyInput>
+        <MainText>Add Tags:</MainText>
+        <MyTextArea value={tags}
             onChange={handleTagsChange}
             placeholder="Enter tags separated by commas">
-        </textarea>
+        </MyTextArea>
 
-        <button onClick={handleUpload} className="btn-green">
+        <MyButton onClick={handleUpload}>
             {loading ? "uploading..." : "Upload!"}
-        </button>
+        </MyButton>
   
         <div>
+          <Line></Line>
   Sort by:{' '}
   <SortButton
     onClick={() => setSortImageBy('newest')}
@@ -193,22 +197,20 @@ const SheetMusic = () => {
 </div>
       <GalleryWrapper>
       {sortImageResources(imageResources).map((image, index) => (
-        <>
-        <p>Date: {image.created_at}</p>
+        <GalleryItem>
+        <MainText>Date: {image.created_at}</MainText>
         <Thumbnail key={image.public_id + index} src={image.secure_url} alt={image.public_id} onClick={() => openModal(image)} />
-        {/* <TagManager resource={image} onUpdateTags={updateImageTags} onDeleteTag={handleDeleteImageTag} /> */}
-        {/* <TagManager resource={image} onDeleteTag={handleDeleteImageTag}   onUpdateTags={(resource, newTags) => updateImageTags(image, tagsInput, newTags)}       
-        /> */}
+       
         <TagManager
           resource={image}
           onUpdateTags={updateImageTags}
           onDeleteTag={handleDeleteImageTag}
-          tagsInput={tagsInput} // Pass tagsInput to the TagManager
+          tagsInput={tagsInput} 
         />
-        Delete item:
-        <button onClick={() => handleDestroy('image', image.public_id)}>x</button>
+        {/* <MainText>Delete item:</MainText> */}
+        <MyButton onClick={() => handleDestroy('image', image.public_id)}>Delete this item</MyButton>
 
-        </>
+        </GalleryItem>
       ))}
     </GalleryWrapper>
 
@@ -223,12 +225,91 @@ const SheetMusic = () => {
   )
 }
 
+const GalleryWrapper = styled.div`
+    padding-top: 10px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    height: 100px;
+    width: 100%;
+    
+`
+
+
+const GalleryItem = styled.div`
+   background-color: #22272d;
+   border-radius: 10px;
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
+   margin: 10px;
+
+`
+
+
+const MyButton = styled.button`
+  margin-top: 15px;
+  width: 110px;
+  border-radius: 5px;
+  font-family: 'Thasadith', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  background-color: #1f6feb;
+  color: #fbfffe; 
+  cursor: pointer;
+  transition: all ease 400ms;
+  &:hover {
+    transform: scale(1.05);
+    background-color: #388bfd;
+}
+`
+
+const MyTextArea = styled.textarea`
+  width: 380px;  
+  background-color: #202124;
+  color: white;
+  font-family: 'Thasadith', sans-serif;
+  font-size: 14px;
+  border-radius: 5px;
+  transition: all ease 400ms;
+ &:hover {
+   background-color: #171b20;
+ }
+`
+
+const MyInput = styled.div`
+  background-color: #1f6feb;
+  font-family: 'Thasadith', sans-serif;
+  color:white;
+  font-size: 14px;
+  
+`
+
+
+const Title = styled.div`
+font-family: 'Sirin Stencil', cursive;
+font-size: 34px;
+color: white;
+padding: 20px;
+`
+
 const SortButton = styled.button`
-  /* background-color: ${({ active }) => (active ? 'lightblue' : 'white')}; */
+border-radius: 5px;
   border: 1px solid #ccc;
   padding: 5px 10px;
   margin-right: 10px;
   cursor: pointer;
+  width: 80px;
+  font-family: 'Thasadith', sans-serif;
+  font-size: 14px;
+  background-color: #1f6feb;
+  color: #fbfffe; 
+  border: none;
+  &:hover {
+    transform: scale(1.05);
+    background-color: #388bfd;
+  }
 `;
 
 const ModalOverlay = styled.div`
@@ -257,14 +338,6 @@ const FullsizeImage = styled.img`
 `;
 
 
-const GalleryWrapper = styled.div`
-    padding-top: 10px;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    height: 100px;
-
-`
 
 const Thumbnail = styled.img`
    
@@ -278,13 +351,28 @@ const Thumbnail = styled.img`
         transform: scale(1.1);
   }
 `
+const MainText = styled.div`
+  font-family: 'Thasadith', sans-serif;
+  font-size: 18px;
+  color: white;
+  padding-top: 15px;
+`
 
 const Wrapper = styled.div`
     text-align: left;
+    background-color: #0d1117;
+    height: 200vh;
 `
 
 const MyListItem = styled.li`
   
+`
+
+const Line = styled.div`
+border-bottom: 1px solid #22272d;
+    padding-top: 20px;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
 `
 
 export default SheetMusic;
