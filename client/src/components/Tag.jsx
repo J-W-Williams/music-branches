@@ -21,6 +21,9 @@ const Tag = ({ tag, onDelete }) => {
   };
 
 const MyButton = styled.div`
+font-family: 'Thasadith', sans-serif;
+  color:white;
+  font-weight: 700;
     cursor: pointer;
     border: 1px solid #1f6feb;
     background: #121d2f;
@@ -29,6 +32,10 @@ const MyButton = styled.div`
     margin: 5px;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     width: 80px;
+    &:hover {
+    transform: scale(1.05);
+    background-color: #388bfd;
+  }
 `
 
 const XButton = styled.button`
