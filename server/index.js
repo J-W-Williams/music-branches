@@ -308,45 +308,91 @@ app.get('/api/get-images', async (req, res) => {
 });
 
 
-app.delete('/api/delete-audio/:id', async (req, res) => {
+app.delete('/api/delete-resource/:resourceType/:id', async (req, res) => {
+  const resourceType = req.params.resourceType;
   const id = req.params.id;
 
   try {
-    const options = "";
+    const options = '';
 
     // Delete from Cloudinary
     const public_id = id;
     const cloudinaryResult = await cloudinary.uploader.destroy(public_id, {
       type: 'upload',
-      resource_type: 'video',
+      resource_type: resourceType,
     });
-    console.log("cloudinaryResult:", cloudinaryResult);
+    console.log('cloudinaryResult:', cloudinaryResult);
 
     // Remove from MongoDB
     const client = new MongoClient(MONGO_URI, options);
 
     try {
       await client.connect();
-      const dbName = "music-branches";
+      const dbName = 'music-branches';
       const db = client.db(dbName);
 
-      const query = { public_id: id };
-      const mongoResult = await db.collection("users").deleteOne(query);
+      // Use the resourceType parameter to determine the collection
+      const collectionName =
+        resourceType === 'video' ? 'users' : 'sheets';
 
-      console.log("mongo result:", mongoResult);
+      const query = { public_id: id };
+      const mongoResult = await db.collection(collectionName).deleteOne(query);
+
+      console.log('mongo result:', mongoResult);
       client.close();
 
       // Both Cloudinary and MongoDB operations completed successfully
-      return res.status(200).json({ message: "Success" });
+      return res.status(200).json({ message: 'Success' });
     } catch (err) {
       console.error('Error deleting from MongoDB:', err);
       return res.status(500).json({ message: 'Error deleting from MongoDB' });
     }
   } catch (error) {
-    console.error('Error deleting audio resources:', error);
-    return res.status(500).json({ message: 'Error deleting audio resources' });
+    console.error('Error deleting resources:', error);
+    return res.status(500).json({ message: 'Error deleting resources' });
   }
 });
+
+
+// app.delete('/api/delete-audio/:id', async (req, res) => {
+//   const id = req.params.id;
+
+//   try {
+//     const options = "";
+
+//     // Delete from Cloudinary
+//     const public_id = id;
+//     const cloudinaryResult = await cloudinary.uploader.destroy(public_id, {
+//       type: 'upload',
+//       resource_type: 'video',
+//     });
+//     console.log("cloudinaryResult:", cloudinaryResult);
+
+//     // Remove from MongoDB
+//     const client = new MongoClient(MONGO_URI, options);
+
+//     try {
+//       await client.connect();
+//       const dbName = "music-branches";
+//       const db = client.db(dbName);
+
+//       const query = { public_id: id };
+//       const mongoResult = await db.collection("users").deleteOne(query);
+
+//       console.log("mongo result:", mongoResult);
+//       client.close();
+
+//       // Both Cloudinary and MongoDB operations completed successfully
+//       return res.status(200).json({ message: "Success" });
+//     } catch (err) {
+//       console.error('Error deleting from MongoDB:', err);
+//       return res.status(500).json({ message: 'Error deleting from MongoDB' });
+//     }
+//   } catch (error) {
+//     console.error('Error deleting audio resources:', error);
+//     return res.status(500).json({ message: 'Error deleting audio resources' });
+//   }
+// });
 
 
 // app.delete('/api/delete-audio/:id', async (req, res) => {
@@ -694,6 +740,74 @@ app.get('/api/get-user-projects', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error fetching user projects' });
   }
 });
+
+
+app.get('/api/get-all-tags', async (req, res) => {
+  try {
+    const client = new MongoClient(MONGO_URI, options);
+    await client.connect();
+    const dbName = "music-branches";
+    const db = client.db(dbName);
+
+    const user = decodeURIComponent(req.query.user);
+    const project = decodeURIComponent(req.query.project);
+
+    const pipeline = [
+      {
+        $match: {
+          user: user,
+          project: project,
+        },
+      },
+      {
+        $project: {
+          tags: 1,
+        },
+      },
+      {
+        $unwind: "$tags",
+      },
+      {
+        $group: {
+          _id: "$tags",
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          allTags: { $addToSet: "$_id" },
+        },
+      },
+    ];
+
+    const audioResult = await db.collection("users").aggregate(pipeline).toArray();
+    const imageResult = await db.collection("sheets").aggregate(pipeline).toArray();
+
+    console.log("audioResult:", audioResult);
+    console.log("imageResult:", imageResult);
+
+    const allTags = new Set();
+
+    audioResult[0]?.allTags?.forEach((tag) => {
+      allTags.add(tag);
+    });
+
+    imageResult[0]?.allTags?.forEach((tag) => {
+      allTags.add(tag);
+    });
+
+    client.close();
+
+    console.log("allTags:", Array.from(allTags));
+    return res.json(Array.from(allTags));
+  } catch (error) {
+    console.error('Error fetching all tags:', error);
+    return res.status(500).json({ message: 'Error fetching all tags' });
+  }
+});
+
+
+
 
 
 
