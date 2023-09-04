@@ -17,6 +17,20 @@ const SheetMusic = () => {
     const [imgUploaded, setImageUploaded] = useState(false);
     const [tagDeleted, setTagDeleted] = useState(false);
     const [tagUpdated, setTagUpdated] = useState(false);
+    const [itemDeleted, setItemDeleted] = useState(false);
+    const [sortImageBy, setSortImageBy] = useState('newest');
+    //const sortedImageResources = sortImageResources(imageResources);
+
+
+    const sortImageResources = (resources) => {
+      return resources.slice().sort((a, b) => {
+        if (sortImageBy === 'newest') {
+          return new Date(b.created_at) - new Date(a.created_at);
+        } else if (sortImageBy === 'oldest') {
+          return new Date(a.created_at) - new Date(b.created_at);
+        }
+      });
+    };
   
   const handleTagsChange = (event) => {
     setTags(event.target.value);
@@ -53,7 +67,7 @@ const SheetMusic = () => {
         }
       }      
       fetchImageResources();
-  }, [selectedProject, tagDeleted, tagUpdated]);
+  }, [selectedProject, tagDeleted, tagUpdated, itemDeleted]);
 
 
   const handleDeleteImageTag = async (tagToDelete, id) => {
@@ -97,6 +111,18 @@ const SheetMusic = () => {
     }
   };
 
+  const handleDestroy = async (resourceType, id) => {
+    console.log('destroying:', id);
+    setItemDeleted(false);
+    const response = await fetch(`/api/delete-resource/${resourceType}/${id}`, {
+      method: 'DELETE',
+    });
+    console.log('response:', response);
+    if (response.ok) {
+      setItemDeleted(true);
+    }
+  };
+  
     const handleUpload = async () => {
         try {
           
@@ -135,6 +161,7 @@ const SheetMusic = () => {
     <Wrapper>
         <h2>Sheet Music Collection!</h2>
         <p>{message}</p>
+     
         <input
             id="file"
             type="file"
@@ -147,11 +174,26 @@ const SheetMusic = () => {
         </textarea>
 
         <button onClick={handleUpload} className="btn-green">
-            {loading ? "uploading..." : "upload to cloudinary"}
+            {loading ? "uploading..." : "Upload!"}
         </button>
   
+        <div>
+  Sort by:{' '}
+  <SortButton
+    onClick={() => setSortImageBy('newest')}
+    active={sortImageBy === 'newest'}
+  >
+    Newest
+  </SortButton>
+  <SortButton
+    onClick={() => setSortImageBy('oldest')}
+    active={sortImageBy === 'oldest'}
+  >
+    Oldest
+  </SortButton>
+</div>
       <GalleryWrapper>
-      {imageResources.map((image, index) => (
+      {sortImageResources(imageResources).map((image, index) => (
         <>
         <p>Date: {image.created_at}</p>
         <Thumbnail key={image.public_id + index} src={image.secure_url} alt={image.public_id} onClick={() => openModal(image)} />
@@ -164,7 +206,9 @@ const SheetMusic = () => {
           onDeleteTag={handleDeleteImageTag}
           tagsInput={tagsInput} // Pass tagsInput to the TagManager
         />
-     
+        Delete item:
+        <button onClick={() => handleDestroy('image', image.public_id)}>x</button>
+
         </>
       ))}
     </GalleryWrapper>
@@ -179,6 +223,14 @@ const SheetMusic = () => {
     </Wrapper>
   )
 }
+
+const SortButton = styled.button`
+  /* background-color: ${({ active }) => (active ? 'lightblue' : 'white')}; */
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  margin-right: 10px;
+  cursor: pointer;
+`;
 
 const ModalOverlay = styled.div`
   position: fixed;

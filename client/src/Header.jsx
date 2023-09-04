@@ -112,12 +112,14 @@ const Wrapper = styled.div`
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
+  background-color: #202124;
 `
 const Users = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  color: white;
 `
 
 const LogoutButton = styled.button`
@@ -125,6 +127,7 @@ const LogoutButton = styled.button`
 `
 const LinkText = styled.div`
   padding: 5px;
+  color: white;
 
 `
 
@@ -132,6 +135,7 @@ const Title = styled.div`
   font-family: 'Sirin Stencil', cursive;
   font-size: 50px;
   text-decoration: none;
+  color: white;
 `
 
 
