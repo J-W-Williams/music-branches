@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import GlobalStyles from './GlobalStyles';
 import Header from './Header';
 import HomePage from './HomePage';
 import Collection from './Collection';
@@ -21,6 +22,7 @@ const App = () => {
       ) : (
         <div>         
              <BrowserRouter>
+             <GlobalStyles />
        <Header />    
          <Routes>
            <Route path="/" element={<HomePage />} />
