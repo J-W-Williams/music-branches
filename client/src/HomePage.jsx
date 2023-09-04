@@ -79,7 +79,7 @@ const HomePage = () => {
         onChange={handleTagsChange}
         placeholder="Enter tags separated by commas"></textarea>
         <p>This is {loggedInUser} by the way.</p>
-        <p>Working on project {selectedProject}.</p>
+        <p>Working on {selectedProject}.</p>
     </>
   )
 }
