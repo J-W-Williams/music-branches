@@ -90,41 +90,46 @@ const filteredImageResources = imageResources.length > 0
 
   return (
     <Wrapper>
-    <h2>
+    <Title>
     Dashboard!
-    </h2>
-    Current project: {selectedProject}
-    <p><Link to="/collection">Current audio clips {audioResources.length}</Link></p> 
-    <p><Link to="/sheet-music">Sheet music collection {imageResources.length}</Link></p>
-    <p>Artwork</p>
-    <div>
-      <h2>Tag Cloud</h2>
-      <div className="tag-buttons">
-        {tags.map((tag) => (
-          <button key={tag} onClick={() => setSelectedTag(tag)}>
-            {tag}
-          </button>
-        ))}
-      </div>
+    </Title>
+    {/* Current project: {selectedProject} */}
+   <MyLink to="/collection"> <MainText>Current audio clips {audioResources.length}</MainText> </MyLink>
+   <MyLink to="/sheet-music"> <MainText>Sheet music collection {imageResources.length}</MainText> </MyLink>
  
+    {/* <div> */}
+      <Title>Tag Cloud</Title>
+      <TagCloudHolder>
+        {tags.map((tag) => (
+          <SingleTag key={tag} onClick={() => setSelectedTag(tag)}>
+            {tag}
+          </SingleTag>
+        ))}
+      </TagCloudHolder>
+
+<MediaResourceHolder>   
       {filteredImageResources.map((resource) => (
   <div key={resource.id}>
-    {/* Render the image resource */}
     <Thumbnail src={resource.secure_url} alt={resource.public_id} onClick={() => openModal(resource)} />
     {/* Add other details about the image resource */}
   </div>
 ))}
-
  
+ </MediaResourceHolder>   
+
+ <MediaResourceHolder>    
       {filteredAudioResources.map((resource) => (
   <div key={resource.id}>
-    {/* Render the audio resource */}
     <audio controls>
       <source src={resource.secure_url} type="audio/webm" />
     </audio>
     {/* Add other details about the audio resource */}
   </div>
+  
+
+
 ))}
+ </MediaResourceHolder> 
 
 {activeImage && (
         <ModalOverlay onClick={closeModal}>
@@ -134,21 +139,81 @@ const filteredImageResources = imageResources.length > 0
         </ModalOverlay>
       )}
 
-    </div>
+    {/* </div> */}
     </Wrapper>
   )
 }
 
-const Wrapper = styled.div`
-    background-color: #0d1117;
-    height: 100%;
+
+const MediaResourceHolder = styled.div`
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  margin: 20px;
 `
 
+const TagCloudHolder = styled.div`
+  width: 480px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+`
+
+const SingleTag = styled.button`
+ 
+font-family: 'Thasadith', sans-serif;
+font-size: 18px;
+  color:white;
+  font-weight: 700;
+    cursor: pointer;
+    border: 1px solid #1f6feb;
+    background: #121d2f;
+    color: white;
+    padding: 5px;
+    margin: 5px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    width: 80px;
+    &:hover {
+    transform: scale(1.05);
+    background-color: #388bfd;
+  }
+
+`
+const Wrapper = styled.div`
+    background-color: #0d1117;
+    height: 200vh;
+    display: flex;
+    flex-direction: column;
+    /* justify-content: center; */
+    align-items: center;
+`
+const MainText = styled.div`
+  font-family: 'Thasadith', sans-serif;
+  font-size: 18px;
+  color: white;
+  padding-top: 15px;
+  text-decoration: none;
+  /* padding-left: 20px; */
+`
 const Title = styled.div`
 font-family: 'Sirin Stencil', cursive;
 font-size: 34px;
 color: white;
 padding: 20px;
+`
+const MyLink = styled(Link)`
+ text-decoration: none;
+ color: white;
+ cursor: pointer;
+ transition: all ease 400ms;
+&:hover {
+    transform: scale(1.1);
+}
 `
 
 const Thumbnail = styled.img`
