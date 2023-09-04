@@ -1,14 +1,25 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useUserContext } from './context/UserContext';
+import { styled } from 'styled-components';
 
 const Dashboard = () => {
 
   const { loggedInUser, logout, selectedProject } = useUserContext();
   const [audioResources, setAudioResources] = useState([]);
   const [imageResources, setImageResources] = useState([]);
+  const [activeImage, setActiveImage] = useState(null);
   const [tags, setTags] = useState([]);
+  const [selectedTag, setSelectedTag] = useState(null);
 
+
+  const openModal = image => {
+    setActiveImage(image);
+  };
+
+  const closeModal = () => {
+    setActiveImage(null);
+  }; 
 
   useEffect(() => {
     async function fetchResourcesAndTags() {
@@ -55,6 +66,19 @@ const Dashboard = () => {
     fetchResourcesAndTags();
   }, [selectedProject, loggedInUser]);
   
+
+  const filteredAudioResources = audioResources.length > 0
+  ? audioResources.filter((resource) => resource.tags.includes(selectedTag))
+  : [];
+
+// // Filter image resources that have the selected tag
+// const filteredImageResources = imageResources.filter((resource) =>
+//   resource.tags.includes(selectedTag)
+// );
+
+const filteredImageResources = imageResources.length > 0
+  ? imageResources.filter((resource) => resource.tags.includes(selectedTag))
+  : [];
 
   const filterResourcesByTag = () => {
 
@@ -141,16 +165,79 @@ const Dashboard = () => {
       <h2>Tag Cloud</h2>
       <div className="tag-buttons">
         {tags.map((tag) => (
-          <button key={tag} onClick={() => filterResourcesByTag(tag)}>
+          <button key={tag} onClick={() => setSelectedTag(tag)}>
             {tag}
           </button>
         ))}
       </div>
-      {/* Display filtered resources based on selected tag */}
-      {/* You can implement this part based on your resource display logic */}
+ 
+      {filteredImageResources.map((resource) => (
+  <div key={resource.id}>
+    {/* Render the image resource */}
+    <Thumbnail src={resource.secure_url} alt={resource.public_id} onClick={() => openModal(resource)} />
+    {/* Add other details about the image resource */}
+  </div>
+))}
+
+ 
+      {filteredAudioResources.map((resource) => (
+  <div key={resource.id}>
+    {/* Render the audio resource */}
+    <audio controls>
+      <source src={resource.secure_url} type="audio/webm" />
+    </audio>
+    {/* Add other details about the audio resource */}
+  </div>
+))}
+
+{activeImage && (
+        <ModalOverlay onClick={closeModal}>
+          <ModalContent>
+            <FullsizeImage src={activeImage.secure_url} alt={activeImage.public_id} />
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
     </div>
     </>
   )
 }
 
+const Thumbnail = styled.img`
+   
+    height: 200px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    margin: 20px;
+    transition: all ease 400ms;
+    cursor: pointer;
+
+    &:hover {
+        transform: scale(1.1);
+  }
+`
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  max-width: 90%;
+  max-height: 90vh;
+  overflow: auto;
+`;
+
+const FullsizeImage = styled.img`
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+`;
 export default Dashboard;
