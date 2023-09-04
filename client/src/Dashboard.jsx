@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useUserContext } from './context/UserContext';
 import { styled } from 'styled-components';
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
 
@@ -158,8 +159,8 @@ const filteredImageResources = imageResources.length > 0
     Dashboard!
     </h2>
     Current project: {selectedProject}
-    <p>Current audio clips {audioResources.length}</p> 
-    <p>Sheet music collection {imageResources.length}</p>
+    <p><Link to="/collection">Current audio clips {audioResources.length}</Link></p> 
+    <p><Link to="/sheet-music">Sheet music collection {imageResources.length}</Link></p>
     <p>Artwork</p>
     <div>
       <h2>Tag Cloud</h2>

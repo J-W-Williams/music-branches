@@ -4,9 +4,11 @@ import styled from "styled-components";
 import Tag from './components/Tag';
 import TagManager from './components/TagManager';
 import { useUserContext } from './context/UserContext';
+import { useNavigate } from 'react-router-dom';
 
 const Collection = () => {
 
+    const navigate = useNavigate();
     const [audioResources, setAudioResources] = useState([]);
     const [message, setMessage] = useState('');
     const [itemDeleted, setItemDeleted] = useState(false);
@@ -198,7 +200,18 @@ const handleDeleteTag = async (tagToDelete, id) => {
           setItemDeleted(true);
         }
       };
+
+      const handleTranscribe = (id) => {
+        
+        navigate('/transcription', { state: { id } });
+
+      };
       
+      const handleChart = (id) => {
+        
+        navigate('/chart', { state: { id } });
+
+      };
       
 
   // const handleDestroy = async (id) => {
@@ -305,6 +318,10 @@ const handleDeleteTag = async (tagToDelete, id) => {
             Delete audio clip
             {/* <button onClick={() => handleDestroy(resource.public_id)}>x</button>  */}
             <button onClick={() => handleDestroy('video', resource.public_id)}>x</button>
+            Transcribe this clip
+            <button onClick={() => handleTranscribe(resource.secure_url)}>Go !</button>
+            Create chart for this clip
+            <button onClick={() => handleChart(resource.secure_url)}>Go !</button>
          
           </MyListItem>
         ))}
