@@ -53,8 +53,6 @@ const Collection = () => {
       setMessage("Could not delete tag");
     }
   };
-
-   
     
   useEffect(() => {
   
