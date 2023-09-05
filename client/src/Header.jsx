@@ -22,6 +22,7 @@ const Header = () => {
 
   const handleProjectChange = (event) => {
     setSelectedProject(event.target.value);
+    localStorage.setItem('selectedProject', event.target.value);
   };
 
   return (
@@ -31,15 +32,19 @@ const Header = () => {
         <>      
         <Users>                       
           {userProjects[loggedInUser] ? (
-            <MySelect onChange={handleProjectChange} defaultValue="">
+             <MySelect onChange={handleProjectChange} value={selectedProject || ""}>
               <option value="" disabled>
                 Select Project
               </option>
-              {userProjects[loggedInUser].map((project) => (
-                <option key={project.id} value={project.name}>
-                  {project.name}
-                </option>
-              ))}
+              {userProjects[loggedInUser] ? (
+                userProjects[loggedInUser].map((project) => (
+                  <option key={project.id} value={project.name}>
+                    {project.name}
+                  </option>
+                ))
+              ) : (
+              <option value="" disabled>Loading projects...</option>
+              )}
             </MySelect>
           ) : (
             <p>Loading projects...</p>

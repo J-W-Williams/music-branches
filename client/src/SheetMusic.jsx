@@ -110,12 +110,12 @@ const SheetMusic = () => {
   };
 
   const handleDestroy = async (resourceType, id) => {
-    console.log('destroying:', id);
+    
     setItemDeleted(false);
     const response = await fetch(`/api/delete-resource/${resourceType}/${id}`, {
       method: 'DELETE',
     });
-    console.log('response:', response);
+    
     if (response.ok) {
       setItemDeleted(true);
     }
