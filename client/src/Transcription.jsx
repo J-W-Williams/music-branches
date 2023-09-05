@@ -23,15 +23,22 @@ const Transcription = () => {
             <MyAudio controls>
               <source src={id} type="audio/webm" />
             </MyAudio   >
-
-        <FrameWrapper src="https://deft-hamster-0ad592.netlify.app/"></FrameWrapper>
-
+        <FrameHolder>
+          <FrameWrapper src="https://deft-hamster-0ad592.netlify.app/"></FrameWrapper>
+        </FrameHolder>
     </Wrapper>
   )
 }
 
+const FrameHolder = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+`
 const FrameWrapper = styled.iframe`
-    width: 100%;
+    width: 80%;
     height: 100vh;
 
 `
