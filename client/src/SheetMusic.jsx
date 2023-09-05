@@ -11,16 +11,15 @@ const SheetMusic = () => {
     const handleSelectFile = (e) => setFile(e.target.files[0]);
     const [tags, setTags] = useState('');
     const [tagsInput, setTagsInput] = useState('');
-    const { loggedInUser, logout, selectedProject } = useUserContext();
+    const { loggedInUser, selectedProject } = useUserContext();
     const [imageResources, setImageResources] = useState([]);
     const [activeImage, setActiveImage] = useState(null);
-    const [imgUploaded, setImageUploaded] = useState(false);
     const [tagDeleted, setTagDeleted] = useState(false);
     const [tagUpdated, setTagUpdated] = useState(false);
     const [itemDeleted, setItemDeleted] = useState(false);
     const [sortImageBy, setSortImageBy] = useState('newest');
   
-
+    // handle sorting of elements by date
     const sortImageResources = (resources) => {
       return resources.slice().sort((a, b) => {
         if (sortImageBy === 'newest') {
@@ -35,6 +34,7 @@ const SheetMusic = () => {
     setTags(event.target.value);
   };
 
+  // handle modal for full-screen image view
   const openModal = image => {
     setActiveImage(image);
   };
@@ -43,9 +43,9 @@ const SheetMusic = () => {
     setActiveImage(null);
   };
 
-  // display existing sheet music
+  // display existing sheet music for the current user/project
   useEffect(() => {
-    // fetch images when component mounts
+    
     async function fetchImageResources() {
         try {
           const response = await fetch(`/api/get-images?user=${loggedInUser}&project=${selectedProject}`);
@@ -67,7 +67,6 @@ const SheetMusic = () => {
       }      
       fetchImageResources();
   }, [selectedProject, tagDeleted, tagUpdated, itemDeleted]);
-
 
   const handleDeleteImageTag = async (tagToDelete, id) => {
     setTagDeleted(false);
@@ -122,114 +121,90 @@ const SheetMusic = () => {
     }
   };
   
-    const handleUpload = async () => {
-        try {
-          
-            const formData = new FormData();
-            formData.append('image', file);
-            formData.append('tags', tags);
-            formData.append('user', loggedInUser);
-            formData.append('project', selectedProject);
+  const handleUpload = async () => {
+    try {      
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('tags', tags);
+      formData.append('user', loggedInUser);
+      formData.append('project', selectedProject);
 
-            const response = await fetch('/api/upload-image', {
-                method: 'POST',
-                body: formData,
-            
-            });
-    
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Uploaded image successfully', data);
-                // will be using modal here to display success message
-                //setImageResources(prevImageResources => [...prevImageResources, data]);
-                setImageResources([...imageResources, data.cloudinaryResult]);
-                //console.log("after upload, imagesResources:", imageResources);
-                
+      const response = await fetch('/api/upload-image', {
+          method: 'POST',
+          body: formData,      
+      });
 
-            } else {
-                console.error('Failed to upload image', response.statusText);
-            }
-        } catch (error) {
-            console.error('Error uploading image', error);
-        } finally {
-          setLoading(false);
-        }
-      };
+      if (response.ok) {
+          const data = await response.json();      
+          setImageResources([...imageResources, data.cloudinaryResult]);                          
+      } else {
+          console.error('Failed to upload image', response.statusText);
+      }
+    } catch (error) {
+        console.error('Error uploading image', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Wrapper>
-        <Title>Your Sheet Music Collection!</Title>
-        <p>{message}</p>
-       
-        <UploaderContainer>
-        <MyInput>
-        {/* <input
-            id="file"
-            type="file"
-            onChange={handleSelectFile}
-            multiple={false}
-        /> */}
-
-        
-        <CustomFileInput>
-          <button>Select New Sheet Music To Upload</button>
-          <input type="file" onChange={handleSelectFile} multiple={false}/>
-        </CustomFileInput>
-        </MyInput>
-       
+      <Title>Your Sheet Music Collection!</Title>
+      <p>{message}</p>     
+      <UploaderContainer>
+        <MyInput>        
+          <CustomFileInput>
+            <button>Select New Sheet Music To Upload</button>
+            <input type="file" onChange={handleSelectFile} multiple={false}/>
+          </CustomFileInput>
+        </MyInput>       
         <MyTextArea value={tags}
             onChange={handleTagsChange}
             placeholder="Enter tags separated by commas">
         </MyTextArea>
-        </UploaderContainer>
+      </UploaderContainer>
 
-        <UploadButton onClick={handleUpload}>
-            {loading ? "uploading..." : "Upload!"}
-        </UploadButton>
-  
-        <div>
-          <Line></Line>
+      <UploadButton onClick={handleUpload}>
+          {loading ? "uploading..." : "Upload!"}
+      </UploadButton>
+        
+      <Line></Line>
 
-  <SortContainer> 
-  <MainText>     
-  Sort by:{' '}
-  </MainText>   
-  <SortButtonContainer>
-  <SortButton
-    onClick={() => setSortImageBy('newest')}
-    // active={sortImageBy === 'newest'}
-  >
-    Newest
-  </SortButton>
-  <SortButton
-    onClick={() => setSortImageBy('oldest')}
-    // active={sortImageBy === 'oldest'}
-  >
-    Oldest
-  </SortButton>
-  </SortButtonContainer>
-  </SortContainer>     
-</div>
+      <SortContainer> 
+        <MainText>     
+         Sort by:
+        </MainText>   
+        <SortButtonContainer>
+          <SortButton
+            onClick={() => setSortImageBy('newest')}
+          >
+            Newest
+          </SortButton>
+          <SortButton
+            onClick={() => setSortImageBy('oldest')}
+          >
+            Oldest
+          </SortButton>
+        </SortButtonContainer>
+      </SortContainer>     
+
       <GalleryWrapper>
-      {sortImageResources(imageResources).map((image, index) => (
-        <GalleryItem key={image.public_id + index}>
-        <MainText>Date: {image.created_at}</MainText>
-        <Thumbnail  src={image.secure_url} alt={image.public_id} onClick={() => openModal(image)} />
-       
-        <TagManager
-          resource={image}
-          onUpdateTags={updateImageTags}
-          onDeleteTag={handleDeleteImageTag}
-          tagsInput={tagsInput} 
-        />
-        {/* <MainText>Delete item:</MainText> */}
-        <MyButton onClick={() => handleDestroy('image', image.public_id)}>Delete this item</MyButton>
+        {sortImageResources(imageResources).map((image, index) => (
+          <GalleryItem key={image.public_id + index}>
+            <MainText>Date: {image.created_at}</MainText>
+            <Thumbnail  src={image.secure_url} alt={image.public_id} onClick={() => openModal(image)} />          
+            <TagManager
+              resource={image}
+              onUpdateTags={updateImageTags}
+              onDeleteTag={handleDeleteImageTag}
+              tagsInput={tagsInput} 
+            />          
+            <MyButton onClick={() => handleDestroy('image', image.public_id)}>Delete this item</MyButton>
+          </GalleryItem>
+        ))}
+      </GalleryWrapper>
 
-        </GalleryItem>
-      ))}
-    </GalleryWrapper>
-
-    {activeImage && (
+      {activeImage && (
         <ModalOverlay onClick={closeModal}>
           <ModalContent>
             <FullsizeImage src={activeImage.secure_url} alt={activeImage.public_id} />
@@ -241,15 +216,14 @@ const SheetMusic = () => {
 }
 
 const GalleryWrapper = styled.div`
-    padding-top: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: row;
-    flex-wrap: wrap;
-    height: 100px;
-    width: 100%;
-    
+  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+  height: 100px;
+  width: 100%;    
 `
 
 const SortContainer = styled.div`
@@ -268,23 +242,22 @@ const SortButtonContainer = styled.div`
 `
 
 const GalleryItem = styled.div`
-   background-color: #22272d;
-   border-radius: 10px;
-   display: flex;
-   flex-direction: column;
-   justify-content: center;
-   align-items: center;
-   margin: 10px;
-
+  background-color: #22272d;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 10px;
 `
+
 const UploadButton = styled.button`
   margin-top: 15px;
   width: 310px;
   height: 40px;
   border-radius: 5px;
   font-family: 'Thasadith', sans-serif;
-  font-size: 14px;
- 
+  font-size: 14px; 
   background-color: #1f6feb;
   color: #fbfffe; 
   cursor: pointer;
@@ -292,7 +265,7 @@ const UploadButton = styled.button`
   &:hover {
     transform: scale(1.05);
     background-color: #388bfd;
-}
+  }
 `
 
 const MyButton = styled.button`
@@ -309,7 +282,7 @@ const MyButton = styled.button`
   &:hover {
     transform: scale(1.05);
     background-color: #388bfd;
-}
+  }
 `
 
 const MyTextArea = styled.textarea`
@@ -320,25 +293,23 @@ const MyTextArea = styled.textarea`
   font-size: 14px;
   border-radius: 5px;
   transition: all ease 400ms;
- &:hover {
+  &:hover {
    background-color: #171b20;
- }
+  }
 `
 
 const MyInput = styled.div`
   background-color: #1f6feb;
   font-family: 'Thasadith', sans-serif;
   color:white;
-  font-size: 14px;
-  
+  font-size: 14px;  
 `
 
-
 const Title = styled.div`
-font-family: 'Sirin Stencil', cursive;
-font-size: 34px;
-color: white;
-padding: 20px;
+  font-family: 'Sirin Stencil', cursive;
+  font-size: 34px;
+  color: white;
+  padding: 20px;
 `
 
 const SortButton = styled.button`
@@ -361,8 +332,7 @@ const SortButton = styled.button`
 
 const UploaderContainer = styled.div`
   display: flex;
-  flex-direction: row;
-  
+  flex-direction: row;  
 `
 
 const CustomFileInput = styled.div`
@@ -370,7 +340,6 @@ const CustomFileInput = styled.div`
   position: relative;
   overflow: hidden;
   margin-right: 10px; 
-
   input[type='file'] {
     position: absolute;
     top: 0;
@@ -380,7 +349,6 @@ const CustomFileInput = styled.div`
     height: 100%;
     cursor: pointer;
   }
-
   button {
     background-color: #1f6feb;
     color: #fbfffe;
@@ -418,18 +386,14 @@ const FullsizeImage = styled.img`
   object-fit: contain;
 `;
 
-
-
-const Thumbnail = styled.img`
-   
-    height: 200px;
-    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-    margin: 20px;
-    transition: all ease 400ms;
-    cursor: pointer;
-
-    &:hover {
-        transform: scale(1.1);
+const Thumbnail = styled.img` 
+  height: 200px;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  margin: 20px;
+  transition: all ease 400ms;
+  cursor: pointer;
+  &:hover {
+    transform: scale(1.1);
   }
 `
 const MainText = styled.div`
@@ -440,27 +404,23 @@ const MainText = styled.div`
 `
 
 const Wrapper = styled.div`
-    text-align: left;
-    background-color: #0d1117;
-    min-height: 200vh; 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    .active {
-      background-color: #5ca0d3;
-      color: #fbfffe;
-    }
-`
-
-const MyListItem = styled.li`
-  
+  text-align: left;
+  background-color: #0d1117;
+  min-height: 200vh; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  .active {
+    background-color: #5ca0d3;
+    color: #fbfffe;
+  }
 `
 
 const Line = styled.div`
-border-bottom: 1px solid #22272d;
-    padding-top: 20px;
-    padding-bottom: 10px;
+  border-bottom: 1px solid #22272d;
+  padding-top: 20px;
+  padding-bottom: 10px;
 `
 
 export default SheetMusic;

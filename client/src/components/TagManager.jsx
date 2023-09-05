@@ -17,7 +17,7 @@ const TagManager = ({ resource, onUpdateTags, onDeleteTag }) => {
   
     return (
       <Wrapper>
-        <MainText>Tags (tap to edit list): </MainText>
+        <MainText><BoldSpan>Tags: </BoldSpan>(tap to edit) </MainText>
         <TagList>
           {resource.tags.map((tag, index) => (
             <Tag key={index} tag={tag} onDelete={() => onDeleteTag(tag, resource.public_id)} />
@@ -52,8 +52,11 @@ const TagManager = ({ resource, onUpdateTags, onDeleteTag }) => {
   `
 const MainText = styled.div`
 font-family: 'Thasadith', sans-serif;
-font-size: 18px;
+font-size: 16px;
 color: white;
+`
+const BoldSpan = styled.span`
+  font-weight: 700;
 `
 
   const MyInput = styled.textarea`

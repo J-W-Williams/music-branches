@@ -1,5 +1,3 @@
-import { useState } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useUserContext } from './context/UserContext';
 import { styled } from 'styled-components';
 
@@ -21,11 +19,12 @@ const Login = () => {
 };
 
 const Title = styled.div`
-font-family: 'Sirin Stencil', cursive;
-font-size: 74px;
-color: white;
-padding: 20px;
+  font-family: 'Sirin Stencil', cursive;
+  font-size: 74px;
+  color: white;
+  padding: 20px;
 `
+
 const MainText = styled.div`
   font-family: 'Thasadith', sans-serif;
   font-size: 28px;
@@ -47,8 +46,9 @@ const MyButton = styled.button`
   &:hover {
     transform: scale(1.05);
     background-color: #388bfd;
-}
+  }
 `
+
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
