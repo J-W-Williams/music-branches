@@ -22,6 +22,7 @@ const Collection = () => {
     const [sortBy, setSortBy] = useState('date');
     const [sortDateOrder, setSortDateOrder] = useState('newest');
     const [sortDurationOrder, setSortDurationOrder] = useState('longest');
+    const [activeSortButton, setActiveSortButton] = useState();
     
 
 
@@ -194,28 +195,46 @@ const handleDeleteTag = async (tagToDelete, id) => {
       <Title>Your Audio Collection</Title>
       <p>{message}</p>
       
-      
+      <ButtonHolder>
       {/* <div> */}
-  <MainText>Sort by:{' '}</MainText>
-  <SortButton
+  <SortText>Sort by:{' '}</SortText>
+  {/* <SortButton
     onClick={() => {
       setSortBy('date');
       setSortDateOrder('newest');
     }}
-    // active={sortBy === 'date' && sortDateOrder === 'newest'}
   >
     Newest
-  </SortButton>
-  <SortButton
+  </SortButton> */}
+<SortButton
+  className={activeSortButton === 'newest' ? 'active' : ''}
+  onClick={() => {
+    setSortBy('date');
+    setSortDateOrder('newest');
+    setActiveSortButton('newest');
+  }}
+>
+  Newest
+</SortButton>
+  {/* <SortButton
     onClick={() => {
       setSortBy('date');
       setSortDateOrder('oldest');
     }}
-    // active={sortBy === 'date' && sortDateOrder === 'oldest'}
   >
     Oldest
-  </SortButton>
+  </SortButton> */}
   <SortButton
+  className={activeSortButton === 'oldest' ? 'active' : ''}
+  onClick={() => {
+    setSortBy('date');
+    setSortDateOrder('oldest');
+    setActiveSortButton('oldest');
+  }}
+>
+  Oldest
+</SortButton>
+  {/* <SortButton
     onClick={() => {
       setSortBy('duration');
       setSortDurationOrder('longest');
@@ -230,10 +249,30 @@ const handleDeleteTag = async (tagToDelete, id) => {
     }}
   >
     Shortest
-  </SortButton>
+  </SortButton> */}
+  <SortButton
+  className={activeSortButton === 'longest' ? 'active' : ''}
+  onClick={() => {
+    setSortBy('duration');
+    setSortDurationOrder('longest');
+    setActiveSortButton('longest');
+  }}
+>
+  Longest
+</SortButton>
+<SortButton
+  className={activeSortButton === 'shortest' ? 'active' : ''}
+  onClick={() => {
+    setSortBy('duration');
+    setSortDurationOrder('shortest');
+    setActiveSortButton('shortest');
+  }}
+>
+  Shortest
+</SortButton>
 {/* </div> */}
 
-
+</ButtonHolder>
 
 
       <MyList>
@@ -241,9 +280,9 @@ const handleDeleteTag = async (tagToDelete, id) => {
         {sortResources(audioResources).map(resource => (
           <MyListItem key={resource.public_id}>
             <InnerList>
-            <p>Date: {resource.created_at}</p>
+            <p><BoldSpan>Date:</BoldSpan> {resource.created_at}</p>
             {/* <p>public_id: {resource.public_id}</p> */}
-            <p>Duration: {resource.bytes}</p>
+            <p><BoldSpan>Duration:</BoldSpan>  {resource.bytes}</p>
             </InnerList>
             <TagManager
               resource={resource}
@@ -252,15 +291,16 @@ const handleDeleteTag = async (tagToDelete, id) => {
               tagsInput={tagsInput} 
             />
 
-            <MyAudio controls>
-              <source src={resource.secure_url} type="audio/webm" />
-            </MyAudio>
+           
             
             <ButtonHolder>
               <MyButton onClick={() => handleTranscribe(resource.secure_url)}>Transcribe this clip</MyButton>
               <MyButton onClick={() => handleChart(resource.secure_url)}>Create chart for this clip</MyButton>
               <MyButton onClick={() => handleDestroy('video', resource.public_id)}>Delete this audio clip</MyButton>
             </ButtonHolder>
+            <MyAudio controls>
+              <source src={resource.secure_url} type="audio/webm" />
+            </MyAudio>
           </MyListItem>
         ))}
        
@@ -270,6 +310,10 @@ const handleDeleteTag = async (tagToDelete, id) => {
     </Wrapper>
   )
 }
+
+const BoldSpan = styled.span`
+  font-weight: 700;
+`
 
 const ButtonHolder = styled.div`
   display: flex;
@@ -283,6 +327,7 @@ const InnerList = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  margin: 15px;
 `
 
 const MyAudio = styled.audio`
@@ -297,6 +342,13 @@ color: white;
 padding: 20px;
 `
 
+const SortText = styled.div`
+  font-family: 'Thasadith', sans-serif;
+  font-size: 18px;
+  color: white;
+  margin-right: 10px;
+`
+
 const MainText = styled.div`
   font-family: 'Thasadith', sans-serif;
   font-size: 18px;
@@ -304,7 +356,6 @@ const MainText = styled.div`
 `
 
 const SortButton = styled.button`
-  /* background-color: ${({ active }) => (active ? 'lightblue' : 'white')}; */
   border-radius: 5px;
   border: 1px solid #ccc;
   padding: 5px 10px;
@@ -323,7 +374,8 @@ const SortButton = styled.button`
 `
 
 const MyButton = styled.button`
-  width: 110px;
+  width: 128px;
+  height: 35px;
   border-radius: 5px;
   font-family: 'Thasadith', sans-serif;
   font-size: 12px;
@@ -356,20 +408,24 @@ const MyListItem = styled.li`
     border-radius: 30px;
     margin: 20px;
     font-family: 'Thasadith', sans-serif;
-    font-weight: 700;
+  
     color: white;
 `
 
 const Wrapper = styled.div`
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   flex-wrap: wrap;
   background-color: #0d1117;
   text-decoration: none;
   padding: 20px;
-  height: 100%;
+  min-height: 200vh; 
+  .active {
+    background-color: #5ca0d3;
+    color: #fbfffe;
+  }
 
 `
 const Line = styled.div`

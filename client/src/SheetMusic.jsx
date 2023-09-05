@@ -161,45 +161,60 @@ const SheetMusic = () => {
         <Title>Your Sheet Music Collection!</Title>
         <p>{message}</p>
        
+        <UploaderContainer>
         <MyInput>
-        <input
+        {/* <input
             id="file"
             type="file"
             onChange={handleSelectFile}
             multiple={false}
-        />
+        /> */}
+
+        
+        <CustomFileInput>
+          <button>Select New Sheet Music To Upload</button>
+          <input type="file" onChange={handleSelectFile} multiple={false}/>
+        </CustomFileInput>
         </MyInput>
-        <MainText>Add Tags:</MainText>
+       
         <MyTextArea value={tags}
             onChange={handleTagsChange}
             placeholder="Enter tags separated by commas">
         </MyTextArea>
+        </UploaderContainer>
 
-        <MyButton onClick={handleUpload}>
+        <UploadButton onClick={handleUpload}>
             {loading ? "uploading..." : "Upload!"}
-        </MyButton>
+        </UploadButton>
   
         <div>
           <Line></Line>
+
+  <SortContainer> 
+  <MainText>     
   Sort by:{' '}
+  </MainText>   
+  <SortButtonContainer>
   <SortButton
     onClick={() => setSortImageBy('newest')}
-    active={sortImageBy === 'newest'}
+    // active={sortImageBy === 'newest'}
   >
     Newest
   </SortButton>
   <SortButton
     onClick={() => setSortImageBy('oldest')}
-    active={sortImageBy === 'oldest'}
+    // active={sortImageBy === 'oldest'}
   >
     Oldest
   </SortButton>
+  </SortButtonContainer>
+  </SortContainer>     
 </div>
       <GalleryWrapper>
       {sortImageResources(imageResources).map((image, index) => (
-        <GalleryItem>
+        <GalleryItem key={image.public_id + index}>
         <MainText>Date: {image.created_at}</MainText>
-        <Thumbnail key={image.public_id + index} src={image.secure_url} alt={image.public_id} onClick={() => openModal(image)} />
+        <Thumbnail  src={image.secure_url} alt={image.public_id} onClick={() => openModal(image)} />
        
         <TagManager
           resource={image}
@@ -228,6 +243,8 @@ const SheetMusic = () => {
 const GalleryWrapper = styled.div`
     padding-top: 10px;
     display: flex;
+    align-items: center;
+    justify-content: center;
     flex-direction: row;
     flex-wrap: wrap;
     height: 100px;
@@ -235,6 +252,20 @@ const GalleryWrapper = styled.div`
     
 `
 
+const SortContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`
+
+const SortButtonContainer = styled.div`
+  padding-top: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+`
 
 const GalleryItem = styled.div`
    background-color: #22272d;
@@ -246,7 +277,23 @@ const GalleryItem = styled.div`
    margin: 10px;
 
 `
-
+const UploadButton = styled.button`
+  margin-top: 15px;
+  width: 310px;
+  height: 40px;
+  border-radius: 5px;
+  font-family: 'Thasadith', sans-serif;
+  font-size: 14px;
+ 
+  background-color: #1f6feb;
+  color: #fbfffe; 
+  cursor: pointer;
+  transition: all ease 400ms;
+  &:hover {
+    transform: scale(1.05);
+    background-color: #388bfd;
+}
+`
 
 const MyButton = styled.button`
   margin-top: 15px;
@@ -266,7 +313,7 @@ const MyButton = styled.button`
 `
 
 const MyTextArea = styled.textarea`
-  width: 380px;  
+  width: 260px;  
   background-color: #202124;
   color: white;
   font-family: 'Thasadith', sans-serif;
@@ -295,7 +342,7 @@ padding: 20px;
 `
 
 const SortButton = styled.button`
-border-radius: 5px;
+  border-radius: 5px;
   border: 1px solid #ccc;
   padding: 5px 10px;
   margin-right: 10px;
@@ -309,6 +356,40 @@ border-radius: 5px;
   &:hover {
     transform: scale(1.05);
     background-color: #388bfd;
+  }
+`;
+
+const UploaderContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  
+`
+
+const CustomFileInput = styled.div`
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  margin-right: 10px; 
+
+  input[type='file'] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+
+  button {
+    background-color: #1f6feb;
+    color: #fbfffe;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-family: 'Thasadith', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
   }
 `;
 
@@ -361,7 +442,15 @@ const MainText = styled.div`
 const Wrapper = styled.div`
     text-align: left;
     background-color: #0d1117;
-    height: 200vh;
+    min-height: 200vh; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    .active {
+      background-color: #5ca0d3;
+      color: #fbfffe;
+    }
 `
 
 const MyListItem = styled.li`
@@ -372,7 +461,6 @@ const Line = styled.div`
 border-bottom: 1px solid #22272d;
     padding-top: 20px;
     padding-bottom: 10px;
-    margin-bottom: 20px;
 `
 
 export default SheetMusic;

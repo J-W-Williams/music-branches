@@ -21,9 +21,9 @@ const App = () => {
         <Login />
       ) : (
         <div>         
-             <BrowserRouter>
-             <GlobalStyles />
-       <Header />    
+        <BrowserRouter>
+        <GlobalStyles />
+        <Header />    
          <Routes>
            <Route path="/" element={<HomePage />} />
            <Route path="/login" element={<Login />} />
