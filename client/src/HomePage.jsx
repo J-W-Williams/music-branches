@@ -79,10 +79,11 @@ const HomePage = () => {
       <MainText>Add tags below! </MainText>
       <MainText>Not inspired right this moment?</MainText>
       <MainText>No worries</MainText>
-      <MainText>You can add them or add more of them later.</MainText>
+      <MainText>You can add some or add more of them later.</MainText>
       <MyInput value={tags}
         onChange={handleTagsChange}
         placeholder="Enter tags separated by commas"></MyInput>
+        
 
     </Wrapper>
   )
