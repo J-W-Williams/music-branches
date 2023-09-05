@@ -5,8 +5,7 @@ import { Link } from 'react-router-dom';
 
 const Header = () => {
 
-  const { loggedInUser, logout, createProject, userProjects, selectedProject,
-    setSelectedProject } = useUserContext();
+  const { loggedInUser, logout, createProject, userProjects, selectedProject, setSelectedProject } = useUserContext();
   const [newProjectName, setNewProjectName] = useState('');
 
   const handleNewProjectChange = (event) => {
@@ -29,8 +28,7 @@ const Header = () => {
     <>
     <Wrapper>
       {loggedInUser && (
-        <>
-      
+        <>      
         <Users>                       
           {userProjects[loggedInUser] ? (
             <MySelect onChange={handleProjectChange} defaultValue="">
@@ -43,13 +41,12 @@ const Header = () => {
                 </option>
               ))}
             </MySelect>
-) : (
-  <p>Loading projects...</p>
-)}
-
-
-          </Users>
-          <Users>
+          ) : (
+            <p>Loading projects...</p>
+          )}
+        </Users>
+          
+        <Users>
           <MyForm onSubmit={handleNewProjectSubmit}>
             <MyInput
               type="text"
@@ -77,7 +74,6 @@ const Header = () => {
     </Wrapper>
     <Line></Line>
     </>
-
   )
 }
 
@@ -87,29 +83,29 @@ const MyForm = styled.form`
 `
 
 const MyInput = styled.input`
-   width: 84px;
-   height: 20px;
-   background-color: #202124;
-   color: white;
-   font-family: 'Thasadith', sans-serif;
-   font-size: 14px;
-   border-radius: 5px;
-   transition: all ease 400ms;
+  width: 84px;
+  height: 20px;
+  background-color: #202124;
+  color: white;
+  font-family: 'Thasadith', sans-serif;
+  font-size: 14px;
+  border-radius: 5px;
+  transition: all ease 400ms;
   &:hover {
-    background-color: #171b20;
+  background-color: #171b20;
   }
 `
 
 const MySelect = styled.select`
-   background-color: #202124;
-   color: white;
-   font-family: 'Thasadith', sans-serif;
-   font-size: 18px;
-   border-radius: 10px;
-   transition: all ease 400ms;
-&:hover {
+  background-color: #202124;
+  color: white;
+  font-family: 'Thasadith', sans-serif;
+  font-size: 18px;
+  border-radius: 10px;
+  transition: all ease 400ms;
+  &:hover {
     background-color: #171b20;
-}
+  }
 `
 
 const Title = styled.div`
@@ -118,20 +114,21 @@ const Title = styled.div`
   text-decoration: none;
   color: white;
   transition: all ease 400ms;
-&:hover {
+  &:hover {
     transform: scale(1.1);
-}
+  }
 `
 
 const MyLink = styled(Link)`
- text-decoration: none;
- color: white;
- cursor: pointer;
- transition: all ease 400ms;
-&:hover {
+  text-decoration: none;
+  color: white;
+  cursor: pointer;
+  transition: all ease 400ms;
+  &:hover {
     transform: scale(1.1);
-}
+  }
 `
+
 const Wrapper = styled.div`
   display: flex;
   flex-direction: row;
@@ -142,6 +139,7 @@ const Wrapper = styled.div`
   text-decoration: none;
   padding: 20px;
 `
+
 const Users = styled.div`
   display: flex;
   flex-direction: column;
@@ -182,9 +180,9 @@ const Navigation = styled.div`
   justify-content: flex-end;
   text-decoration: none;
 `
+
 const Line = styled.div`
     border-bottom: 1px solid #22272d;
-
 `
 
 export default Header;
